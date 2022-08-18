@@ -1,0 +1,427 @@
+\documentclass[11pt]{report}
+\usepackage[utf8]{inputenc}
+
+% Colors
+\usepackage[dvipsnames]{xcolor}
+
+\definecolor{C0}{HTML}{1d1d1d}
+\definecolor{C1}{HTML}{1e3668}
+\definecolor{C2}{HTML}{199d8b}
+\definecolor{C3}{HTML}{d52f4c}
+\definecolor{C4}{HTML}{5ab2d6}
+\definecolor{C5}{HTML}{ffb268}
+
+\color{C0}
+
+% fonts
+\usepackage[no-math]{fontspec}
+
+\emergencystretch=8pt
+\hyphenpenalty=1000 % default 50
+\tolerance=800      % default 200
+%\righthyphenmin=4
+%\lefthyphenmin=4
+
+\setmainfont[
+    BoldFont = Vollkorn Bold,
+    ItalicFont = Vollkorn Italic,
+    BoldItalicFont={Vollkorn Bold Italic},
+    RawFeature=+lnum,
+]{Vollkorn}
+
+\setsansfont[
+    BoldFont = Lato Bold,
+    FontFace={l}{n}{*-Light},
+    FontFace={l}{it}{*-Light Italic},
+]{Lato}
+
+\usepackage[scale=.78]{luatexja-fontspec}
+\setmainjfont{SourceHanSerifSC-Bold}%{Source Han Serif CN VF Regular}
+
+
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\newcommand\smop\smashoperator
+
+\usepackage{unicode-math}
+\mathitalicsmode=1
+
+\setmathfont[
+mathit = sym,
+mathup = sym,
+mathbf = sym,
+math-style = TeX, 
+bold-style = TeX
+]{Wholegrain Math}
+\everydisplay{\Umathoperatorsize\displaystyle=4ex}
+\AtBeginDocument{\renewcommand\setminus{\smallsetminus}}
+%\setmathfont{TeX Gyre Pagella Math}[range=\sum,Scale=1.5]
+
+
+% section format
+\usepackage{sectsty}
+%\allsectionsfont{\normalfont\Vollkorn\bfseries}
+\allsectionsfont{\normalfont\sffamily\bfseries}
+
+\usepackage{titlesec}
+
+\titleformat{\chapter}[display]{\sffamily\bfseries}{}{0pt}{\fontsize{22}{28}\selectfont {\fontseries{l}\sffamily Chapter \thechapter}\\\vspace{-.2em}}
+\titleformat{\part}[display]{\sffamily\bfseries}{}{0pt}{\fontsize{22}{28}\selectfont {\fontseries{l}\sffamily Part \thepart}\\\vspace{10cm}}
+
+\usepackage{tocloft}
+\renewcommand{\cfttoctitlefont}{\fontsize{22}{22}\selectfont\sffamily\bfseries}
+
+
+\def\myraggedright{%
+  \rightskip=0pt plus 1fil
+  \spaceskip .3333em \xspaceskip .5em\relax
+}
+
+
+% Bibliography
+%\usepackage[backend=biber,style=alphabetic,maxalphanames=5,maxcitenames=99,maxbibnames=99,firstinits=true,url=false,eprint=false]{biblatex}
+\usepackage[backend=biber,backref,style=alphabetic,maxcitenames=99,maxbibnames=99,firstinits=true,url=false]{biblatex}
+\addbibresource{thesis.bib}
+\defcounter{biburlnumpenalty}{3000}
+\defcounter{biburlucpenalty}{6000}
+\defcounter{biburllcpenalty}{9000}
+
+\DefineBibliographyStrings{english}{%
+  backrefpage = {cited on page},%
+  backrefpages = {cited on pages}%
+}
+
+% Page Formatting
+\usepackage[
+    paper=b5paper,
+    inner=22mm,         % Inner margin
+    outer=22mm,         % Outer margin
+    bindingoffset=0mm, % Binding offset
+    top=28mm,           % Top margin
+    bottom=22mm,        % Bottom margin
+    %showframe,         % show how the type block is set on the page
+]{geometry}
+
+\setlength{\parindent}{0em}
+\setlength{\parskip}{.7em}
+
+
+\usepackage{afterpage}
+\usepackage{pdflscape}
+
+\usepackage{enumitem}
+\renewcommand{\labelitemi}{\normalfont\bfseries\textendash}
+
+\usepackage{appendix}
+\usepackage{setspace}
+
+% header
+\usepackage{fancyhdr}
+%\renewcommand{\headrulewidth}{0pt}
+
+\fancypagestyle{body}{%
+    \fancyhf{}
+    \fancyhead[R]{{\sffamily page \textbf{\thepage}}}
+    \fancyhead[L]{{\sffamily chapter \textbf{\thechapter}}}%~section \thesection}}
+}
+
+\fancypagestyle{front}{%
+    \fancyhf{}
+    \fancyhead[R]{{\sffamily page \textbf{\thepage}}}
+}
+\setlength{\headheight}{14pt}
+
+\usepackage{etoolbox}
+\patchcmd{\chapter}{\thispagestyle{plain}}{\thispagestyle{front}}{}{}
+
+\AtBeginDocument{\addtocontents{toc}{\protect\thispagestyle{front}}}
+
+\makeatletter
+%\setlength{\cftbeforefigskip}{16pt}
+% \patchcmd{<cmd>}{<search>}{<replace>}{<succes>}{<failure>}
+\patchcmd{\@chapter}{\addtocontents{lof}{\protect\addvspace{10\p@}}}{}{}{}% LoF
+\patchcmd{\@chapter}{\addtocontents{lot}{\protect\addvspace{10\p@}}}{}{}{}% LoT
+\makeatother
+
+\setlength{\cftbeforesecskip}{6pt}
+\setlength{\cftbeforesubsecskip}{6pt}
+
+% Algorithms
+\usepackage{algorithm}
+\AtBeginEnvironment{algorithmic}{\setstretch{1.25}}
+\counterwithin{algorithm}{chapter}
+\usepackage{algorithmicx}
+\usepackage[noend]{algpseudocode}
+
+\algrenewcommand\algorithmicindent{1.0em}
+\let\Algorithm\algorithm
+\renewcommand\algorithm[1][]{\Algorithm[#1]}%\fontsize{11}{16}\selectfont}
+
+\newenvironment{labelalgorithm}[4][t]{%
+\begin{algorithm}[#1]
+%\newcommand{\thealgorithmlabel}{#2}
+\newcommand{\thealgorithmname}{#3}
+%\newcommand{\thealgorithmcap}{#4}
+\customlabel{alg:name:#2}{\textproc{#3}}
+%\customlabel{alg:cap:#2}{#4}
+\caption{#4}\label{alg:#2}
+}{\end{algorithm}}
+
+
+\makeatletter
+\newcommand{\customlabel}[2]{%
+   \protected@write \@auxout {}{\string \newlabel {#1}{{#2}{\thepage}{#2}{#1}{}} }%
+   \hypertarget{#1}{}%
+}
+\makeatother
+
+
+%\algdef{SE}[FUNCTION]{Procedure}{EndProcedure}%
+%   [2]{\algorithmicclass\ \textproc{#1}\ifthenelse{\equal{#2}{}}{}{$($#2$)$}}%
+%   {\algorithmicend\ \algorithmicclass}%
+
+\algnewcommand\algorithmicclass{\textbf{class}}
+\algdef{SE}[FUNCTION]{Class}{EndClass}%
+   [2]{\algorithmicclass\ \textproc{#1}\ifthenelse{\equal{#2}{}}{}{$($#2$)$}}%
+   {\algorithmicend\ \algorithmicclass}%
+
+% Tells algorithmicx not to print an empty line if `noend' is set 
+\makeatletter
+\ifthenelse{\equal{\ALG@noend}{t}}%
+  {\algtext*{EndClass}}
+  {}%
+\makeatother
+
+%\usepackage{showlabels}
+
+% Math 
+
+\newtheorem{theorem}{Theorem}[chapter]
+\newtheorem{assumption}[theorem]{Assumption}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+
+\newtheorem{definition}[theorem]{Definition}
+
+\theoremstyle{definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{remarkx}[theorem]{Remark}
+\newenvironment{remark}
+  {\pushQED{\qed}\renewcommand{\qedsymbol}{$\triangle$}\remarkx}
+  {\popQED\endremarkx}
+
+
+\usepackage{thmtools}
+\usepackage{thm-restate}
+
+
+
+% Graphics, tables, and captions
+
+\usepackage{pgffor}
+\usepackage{graphicx}
+\usepackage{pgfplots}
+\usepackage{subcaption}
+\captionsetup{labelfont=bf}
+\captionsetup{width=.9\textwidth}
+
+\usepackage{tabularx}
+\usepackage{ltablex}
+\usepackage{booktabs}
+\usepackage{array}
+
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,
+    linkcolor=C1,
+    citecolor=C1,
+    urlcolor=C1
+}
+
+\usepackage{pdfpages}
+\usepackage[nameinlink,noabbrev,capitalize]{cleveref}
+
+\crefname{ineq}{}{}
+\crefname{equation}{}{}
+\creflabelformat{ineq}{#2{\textup{(1)}}#3}
+\creflabelformat{equation}{#2\textup{(#1)}#3}
+
+\usepackage{lipsum}  
+
+
+\allowdisplaybreaks
+\newcommand{\note}[1]{{\color{Red}#1}}
+\newcommand{\TODO}[1]{{\color{blue}TODO: #1}}
+
+\newcommand{\tableemph}{\textbf}
+%\newcommand{\tableemph}{*}
+%\newcommand{\tableemph}{\color{Red}}
+
+
+%\usepackage{dsfont}
+\newcommand{\bOne}{\mathbb{1}}
+
+%\usepackage{bm}
+%\renewcommand{\vec}{\mathbf}
+\renewcommand{\vec}{\symbfup}
+\newcommand{\ms}{\texttt}
+
+\DeclareMathOperator*{\argmin}{argmin}
+
+
+\newcommand{\cT}{\textsf{\textup{\fontsize{7}{7}\selectfont{H}}}}
+\newcommand{\rT}{\textsf{\textup{\fontsize{7}{7}\selectfont{T}}}}
+\newcommand{\T}{\textsf{\textup{\color{red}T}}}
+
+\renewcommand{\d}{\textup{d}}
+\newcommand{\tr}{\operatorname{tr}}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\F}{{\textsf{\textup{F}}}}
+
+\newcommand{\EE}{\mathbb{E}}
+\newcommand{\PP}{\mathbb{P}}
+
+\newcommand{\W}{d_{\mathrm{W}}}
+\newcommand{\KS}{d_{\mathrm{KS}}}
+\newcommand{\TV}{d_{\mathrm{TV}}}
+
+\newcommand{\qq}[3][]{%
+    \ifstrempty{#1}{%
+        [#2]_{#3}^{\circ\textup{q}}
+    }{%
+        [#2]_{#3}^{\textup{{#1}q}}
+    }%
+}
+
+\newcommand{\ff}[3][]{%
+    \ifstrempty{#1}{%
+        [#2]_{#3}^{\circ\textup{p}}
+    }{%
+        [#2]_{#3}^{\textup{{#1}p}}
+    }%
+}
+
+
+\newcommand{\nv}{n_{\textup{v}}}
+\newcommand{\lmin}{\lambda_{\textup{min}}}
+\newcommand{\lmax}{\lambda_{\textup{max}}}
+
+\newcommand{\ii}{\symbfit{i}}
+
+\newcommand{\samp}[2][]{#1\langle #2 #1\rangle}
+
+\newcommand{\mf}[1]{(#1)}
+\newcommand{\A}{\mf{\vec{A}}}
+\newcommand{\fA}{f\A}
+\newcommand{\pA}{p\A}
+\newcommand{\fT}{f\mf{\vec{T}}}
+
+\newcommand{\Qhat}{\mkern.5mu\widehat{\mkern-.5mu\vec{Q}\mkern-.5mu}\mkern.5mu}
+    
+\newcommand{\lan}{\textup{\textsf{lan-FA}}}
+\newcommand{\err}{\textup{\textsf{err}}}
+\newcommand{\res}{\textup{\textsf{res}}}
+\newcommand{\Res}{\textup{\textsf{res}}}
+\newcommand{\Opt}{\textup{\textsf{opt}}}
+
+\newcommand{\lanopt}{\textup{\textsf{lan-OR}}}
+
+\AtBeginDocument{\renewcommand{\Re}{\operatorname{Re}}}
+\AtBeginDocument{\renewcommand{\Im}{\operatorname{Im}}}
+
+% Document information
+\usepackage{wallpaper}
+
+
+\let\svthefootnote\thefootnote
+\newcommand\freefootnote[1]{%
+  \let\thefootnote\relax%
+  \footnotetext{#1}%
+  \let\thefootnote\svthefootnote%
+}
+\interfootnotelinepenalty=10000
+
+
+
+\begin{document}
+
+\fontsize{11}{16}\selectfont
+
+\pagestyle{empty}
+\include{UW_title}
+
+
+\ThisULCornerWallPaper{1}{special_pages/UW_logo.pdf}
+\begin{titlepage}
+\renewcommand{\thepage}{Title page}
+~\vfill~
+\sffamily
+
+\fontsize{19.2}{22}\selectfont
+Lanczos-based  methods for matrix functions
+
+\vspace{1.5cm}
+\fontsize{26}{22}\selectfont
+\textbf{TYLER CHEN}
+
+\vspace{5cm}
+
+\fontsize{10}{12}\selectfont
+A dissertation submitted in partial fulfillment 
+\\
+of the requirements for the degree of
+
+\textbf{Doctor of Philosophy}
+
+\vspace{3cm}
+2022
+\\
+University of Washington
+\\
+Department of Applied Mathematics
+
+\end{titlepage}
+
+
+\pagenumbering{roman}
+\pagestyle{front}
+
+\include{forward}
+
+
+
+
+{
+\fontsize{11}{13}\selectfont
+\tableofcontents
+}
+
+\clearpage
+\pagenumbering{arabic}
+\pagestyle{body}
+
+\include{introduction} 
+
+\include{polynomial}
+
+\include{QF_algs} 
+
+\include{random_quadrature} 
+
+\include{opt_algs}
+
+\include{LF_algs}
+
+\include{spec_bounds}
+
+\include{finite_precision}
+
+\include{outlook}
+
+\include{notation}
+
+\printbibliography[heading=bibnumbered]
+
+\end{document}

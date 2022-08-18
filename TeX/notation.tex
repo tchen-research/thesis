@@ -1,0 +1,294 @@
+\chapter{Notation and other reference sheets}
+\label{chap:notation}
+
+\section{Basic notation}
+
+Here we provide a reference for some common notation.
+The page number is the first page on which the notation is used.
+In many cases, some of the parameters will be suppressed for notational convince.
+for instance, while the \( i \)-th eigenvalue of a matrix \( \vec{B} \) is denoted \( \lambda_i(\vec{B}) \), we will often write \( \lambda_i \) for the \( i \)-th eigenvalue of \( \vec{A} \) 
+
+\begin{center}
+    \begin{tabularx}{\textwidth}{p{1.9cm}Xr}\toprule
+     notation & description & page \\\midrule\endfirsthead
+    \toprule 
+    notation & description & page \\\midrule\endhead
+    \midrule\multicolumn{3}{r}{\itshape continues on next page}\\\midrule\endfoot
+    \bottomrule\endlastfoot
+%        \( x \) & identity function \( x : t\mapsto t \) & \pageref{eqn:A} \\
+%    \midrule
+        \( \vec{A} \) & \( n\times n \) Hermitian matrix & \pageref{eqn:A} \\
+        \( \lambda_i \), \( \lambda_i(\vec{A}) \) & \( i \)-th eigenvalue of \( \vec{A} \) & \pageref{eqn:A} \\
+        \( \Lambda \), \( \Lambda(\vec{A}) \) & set of eigenvalues of \( \vec{A} \) & \pageref{eqn:A} \\
+        \( \mathcal{I} \), \( \mathcal{I}(\vec{A}) \) & smallest interval containing \( \Lambda(\vec{A} \) & \pageref{eqn:unif_bound} \\
+    \midrule
+    %=================================
+    \( \fA \) & matrix function & \pageref{def:fA} \\
+    \( \tr(\fA) \) & spectral sum & \pageref{eqn:spectral_sum} \\
+        \( \Phi \), \(\Phi_{\vec{A}} \) & cumulative empirical spectral measure (CESM) & \pageref{def:CESM} \\
+        \( \Psi \), \( \Psi_{\vec{A},\vec{v}} \) & weighted CESM & \pageref{def:wCESM} \\
+        \( \mathcal{K}_k \), \( \mathcal{K}_k(\vec{A},\vec{v}) \) & dimension \( k \) Krylov subspace & \pageref{def:Kk} \\
+    \( \vec{Q},\vec{T} \) & Lanczos vectors and coefficients after \( k \) iterations & \pageref{eqn:lanczos_three_term} \\
+        \( \Qhat,\widehat{\vec{T}} \) & Lanczos vectors and coefficients after completion & \pageref{eqn:lanczos_three_term_complete} \\
+    % ================================
+    \midrule
+%        \( \EE \) & expectation \\
+%        \( \PP \) & probability \\
+%        \( \operatorname{Unif}(\cdot) \) & uniform probability distribution \\
+        \( \bOne \) & indicator function & \pageref{eqn:A} \\
+        \( \| g \|_S \) & supremum of \( g:\mathbb{C}\to\mathbb{C} \) on \( S\subset \mathbb{C} \) & \pageref{def:norm_sup} \\
+        \( \| \cdot \| \) & norm induced by matrix with same eigenvectors as \( \vec{A} \) & \pageref{def:norm} \\
+    \midrule
+        \( \mu \) & non-negative unit-mass distribution function & \pageref{def:mu} \\
+        \( \langle \cdot, \cdot \rangle_{\mu} \) & inner product induced by \( \mu \) & \pageref{eqn:mu_ip} \\
+        \( p_i \) & degree \( i \) orthogonal polynomial of \( \mu \) & \pageref{def:OP}\\ 
+        \( \theta_j^{(s+1)} \) & \( j \)-th zero of \( p_s \) & \pageref{thm:jacobi_eigen}\\
+    \( \vec{M} \), \( \vec{M}(\nu) \) & Jacobi matrix for \( \mu \), \( \nu \) & \pageref{def:jacobi}\\
+        \( \mu_{a,b}^T \) & Chebyshev distribution function on \( [a,b] \) & \pageref{def:muT}\\
+        \( m_i \) & degree \( i \) modified moment with respect to \( \mu \) &\pageref{def:modified_moments}\\ 
+    % ================================
+    \midrule
+        \( \ff[a]{f}{s} \) & degree \( s \) projection of \( f \) in \( \langle \cdot, \cdot \rangle_{\mu} \) & \pageref{def:fffs}\\
+        \( \ff[i]{f}{s} \) & degree \( s \) interpolation of \( f \) at zeros of \( p_s \) & \pageref{def:fffs} \\
+        \( \ff[d-a]{f}{s} \) & degree \( s \) damped projection of \( f \) in \( \langle \cdot, \cdot, \rangle_{\mu} \) & \pageref{def:fffs} \\
+        \( \ff[d-i]{f}{s} \) & degree \( s \) damped interpolation of \( f \) at zeros of \( p_s \) & \pageref{def:fffs} \\
+        \( \{ \rho_i \}_{i=0}^{s} \) & damping coefficients & \pageref{def:damping} \\
+        \( \{ \rho_i^J \}_{i=0}^{s} \) & Jackson's damping coefficients & \pageref{def:jackson_coeffs} \\
+    \midrule
+        \( \vec{C}_{\mu\to\nu} \) & connection coefficient matrix & \pageref{def:connection_coeffs} \\
+        \( \langle \,\cdot\, \rangle \) & average over \( \ell = 0, \ldots, \nv-1 \) & \pageref{eqn:ave_notation} \\
+        \( \mathbb{S}^{n-1} \) & unit hypersphere on \( \mathbb{C}^n \) & \pageref{eqn:hypersphere} \\ 
+    \midrule
+        \( \mathsf{cg}_k \) & CG iterate at step \( k \) & \pageref{eqn:cg_def} \\
+        \( \mathsf{mr}_k \) & MINRES iterate at step \( k \) & \pageref{eqn:mr_def} \\
+        \( \mathsf{qmr}_k \) & QMR iterate at step \( k \) & \pageref{eqn:qmr_def} \\
+        \( \lanopt_k(r,R) \) & Lanczos-OR iterate & \pageref{def:lanczos_or} \\
+        \( \lan_k(f) \) & Lanczos-FA iterate & \pageref{def:lanczos_fa} \\
+        \( \mathsf{sign-OR} \) & Lanczos-OR induced iterate to matrix sign & \pageref{def:sign_or} \\ 
+    \midrule
+        \( \err_k(z) \) & Lanczos-FA error at step \( k \) for for \( \vec{A}^{-1} \vec{v} \) & \pageref{def:err} \\ 
+        \( \res_k(z) \) & Lanczos-FA residual at step \( k \) for for \( \vec{A}^{-1} \vec{v} \) & \pageref{def:err} \\ 
+        \( h_{w,z} \) & \( h_{w,z} = (x-w)/(x-z) \) & \pageref{def:hwz} \\
+        \( h_{z} \) & \( h_{z} = 1/(x-z) \) & \pageref{def:hwz} \\
+        \( S, S_0, \ldots, S_{k-1} \) & \( \Lambda \subset  S \), \( \lambda_i(\vec{T}) \subset S_i \) & \pageref{thm:err_int} \\
+\end{tabularx}
+\end{center}
+
+\section{Indexing for matrices}
+
+Given a matrix \( \vec{B} \), we use \( [\vec{B}]_{r:r',c:c'} \) to denote the submatrix matrix of \( \vec{B} \) consisting of rows \( r \) up to (but not including) row \( r' \) and columns \( c \) up to  (but not including) \( c' \).
+Thus, the dimension of \( [\vec{B}]_{r:r',c:c'} \) is \( (r'-r)\times (c'-c) \).
+\emph{Indexing of matrices starts at zero}.
+If any of these indices are equal to \( 0 \) or the corresponding max dimension of \( \vec{B} \), they may be omitted.
+If \( r' = r+1  \) or \( c' = c+1 \), then we will simply write \( r \) or \( c \).
+
+As an example, suppose
+\begin{equation*}
+    \vec{B} = 
+    \begin{bmatrix}
+        1 & 2 & 3 & 4 \\
+        5 & 6 & 7 & 8 \\
+        9 & 10 & 11 & 12
+    \end{bmatrix}
+\end{equation*}
+Then
+\begin{equation*}
+    [\vec{B}]_{:,:2}
+    = 
+    \begin{bmatrix}
+        1 & 2 \\
+        5 & 6 \\
+        9 & 10
+    \end{bmatrix}
+    ,\quad
+    [\vec{B}]_{1,:} 
+    = 
+    \begin{bmatrix}5&6&7&8\end{bmatrix},
+    \quad\text{and}\quad
+    [\vec{B}]_{0,3} = 4.
+\end{equation*}
+
+I am sure many readers are wondering why I would use such a notation. 
+Perhaps some are even thinking of \href{https://xkcd.com/927/}{xkcd number 927, Standards}.
+
+\begin{center}
+    \includegraphics[width=8cm]{imgs/standards.png}
+\end{center}
+
+While I do not expect this notation to become standard in linear algebra, it was chosen intentionally after much consideration. 
+The two primary motivations are as follows:
+\begin{itemize}
+    \item Much of this thesis relies on the theory of orthogonal polynomials, and it is natural for orthogonal polynomials to be indexed by their degree (which starts at zero). 
+    It then makes sense that matrices involving orthogonal polynomials are indexed in a way which matches the polynomials.
+        
+    \item This thesis is written to be as accessible as possible to practitioners, particularly those in physics and data science.
+        Zero-indexed programming languages are more common than one-indexed languages in these fields. 
+        In such languages, non-inclusive endpoints are idiomatic, so that the number of objects in a range is equal to the difference of the endpoints.\footnote{The reason many languages use such conventions is perhaps due in part to Dijkstra's 1982 letter, \emph{Why numbering should start at zero}, which advocates for indexing to start at zero and for ranges to include the start point but not the end point.}
+        In fact, our notation is identical to that of Python/NumPy, the language of choice in many disciplines from these fields.
+\end{itemize}
+
+In my opinion, it would have been nice if sums were also indexed in a similar way. 
+However, using a notation like \( \sum_{r\leq i<r'} \) was deemed too verbose, and modifying the standard notation \( \sum_{i=r}^{r'-1} \) would have caused too much confusion.
+
+
+\section{The model problem}
+
+The model problem \cite{strakos_91,strakos_greenbaum_92} is a standard class of problems used in the analysis of the finite precision behavior of Lanczos based algorithms, especially in the context of solving linear systems of equations.
+This is because the exponential spacing of the eigenvalues is favorable to Lanczos based linear system solvers in exact arithmetic yet simultaneously causes the Lanczos algorithm to rapidly lose orthogonality in finite precision arithmetic.
+The model problem is parameterized by the dimension \( n \), the condition number \( \kappa \), and a parameter \( \rho \) controlling the rate of growth of eigenvalues.
+Specifically,
+\begin{equation}
+    \label{eqn:model_problem}
+    \lambda_0 = 1
+    ,\quad \lambda_{n-1} = \kappa
+    ,\quad \lambda_i = \lambda_1 + \left( \frac{i}{n-1} \right) \cdot (\kappa -1) \cdot \rho^{n-i-1}
+    ,\qquad i=1,\ldots, n-1.
+\end{equation}
+
+
+\section{Some basic properties}
+
+
+\begin{lemma}
+    \label[lemma]{thm:norm_exchange}
+    Let \( \|\cdot\| \) be a norm induced by a positive definite matrix with the same eigenvectors as \( \vec{A} \). 
+    Then
+    \begin{equation*}
+        \| g\mf{\vec{A}} \vec{v} \| \leq \| g\mf{\vec{A}} \|_2 \| \vec{v} \| .
+    \end{equation*}
+\end{lemma}
+
+\begin{proof}
+    Let \( \vec{B}^2 \) be the matrix inducing \( \| \cdot \| \).
+    By assumption \( \vec{A} \) and \( \vec{B} \) commute, so
+    \begin{equation*}
+        \| g\mf{\vec{A}} \vec{v} \|
+        = \| \vec{B} g\mf{\vec{A}} \vec{v}\|_2
+        = \| g\mf{\vec{A}} \vec{B} \vec{v}\|_2
+        \leq \| g\mf{\vec{A}} \|_2 \|\vec{B} \vec{v}\|_2
+        \leq \| g\mf{\vec{A}} \|_2 \|\vec{v}\|.
+        \qedhere
+    \end{equation*}
+\end{proof}
+
+We now provide a number of useful facts about powers of tridiagonal matrices. 
+To simplify our proofs, we recall the following fact.
+
+\begin{lemma}
+For any \( q>0 \) and \( k_0,k_q=0,1,\ldots, n-1 \),
+\begin{equation*}
+    [\vec{A}^q]_{k_0,k_q}
+    = \sum_{k_1=0}^{n-1} \sum_{k_2=0}^{n-1} \cdots \sum_{k_{q-1}=0}^{n-1}
+    [\vec{A}]_{k_0,k_1} [\vec{A}]_{k_1,k_2} \cdots [\vec{A}]_{k_{q-1},k_q}.
+\end{equation*}
+\end{lemma}
+
+\begin{proof}
+This is the definition of matrix multiplication applied \( q \) times.
+\end{proof}
+
+Note that if \( \vec{T} \) is tridiagonal, then \( [\vec{T}]_{k_\ell,k_{\ell+1}} = 0 \) whenever \( |k_{\ell}-k_{\ell+1}|>1 \).
+Thus, the product 
+\begin{equation}
+    \label{eqn:tridiag_power_term}
+    [\vec{T}]_{k_0,k_1} [\vec{T}]_{k_1,k_2} \cdots [\vec{T}]_{k_{q-1},k_q}
+\end{equation}
+is nonzero, if and only if \( |k_{\ell} - k_{\ell+1}|\leq 1 \) for all \( \ell \). 
+Thus, assuming \cref{eqn:tridiag_power_term} is nonzero, we can view \( \{k_\ell\} \) as a walk on \( \{0,1,\ldots, n-1\} \), starting from \( k_0 \) and ending at \( k_q \), where, at each iteration \( \ell \), we stay put or move to an adjacent index. 
+Clearly
+\begin{equation*}
+    |k_0-k_1| + |k_1-k_2| + \cdots + |k_{q-1} - k_{q}| \leq q.
+\end{equation*}
+In other words, the total distance moved during the walk is at most \( q \).
+
+Using this perspective, we immediately find that powers of tridiagonal matrices are banded.
+\begin{corollary}
+    \label[corollary]{thm:tridiag_power}
+    Suppose \( \vec{T} \) is a tridiagonal matrix and \( q \geq 0 \) an integer.
+    Then, for all \( i,j \) with \( |i-j|>q \), 
+    \begin{equation*}
+        [\vec{T}^q]_{i,j} = 0.
+    \end{equation*}
+\end{corollary}
+
+\begin{proof}
+    Consider a nonzero term \cref{eqn:tridiag_power_term}.
+    If \( |i-j|>q \), then it is not possible to move from \( i \) to \( j \) in \( q \) steps.
+\end{proof}
+
+
+More generally, we find that the entries of powers of a tridiagonal matrix depend only on nearby entries of the base tridiagonal matrix.
+We consider the symmetric case for simplicity.
+\begin{corollary}
+    \label[corollary]{thm:tridiag_power_dependence}
+    Suppose \( \vec{T} \) is a symmetric tridiagonal matrix and \( q \geq 0 \) an integer.
+    Then, for any \( i,j \) with  \( |j-i|\leq q \),
+    \begin{equation*}
+        [\vec{T}^q]_{i,j}
+    \end{equation*}
+    is determined entirely by \( [\vec{T}]_{:k,:k} \), where \( k = \max(i,j) + \lfloor (q-|j-i|)/2 \rfloor \).
+    In fact, if \( q-|j-i| \) is even, then there is no dependence on \( [\vec{T}]_{k-1,k-1} \). 
+\end{corollary}
+
+\begin{proof}
+    Without loss of generality, we may assume \( i\leq j \).
+
+    Consider a nonzero term \cref{eqn:tridiag_power_term}.
+    We require at least \( j-i \) of our allocated \( q \) movements to move from \( i \) to \( j \).
+    Since we must end at \( j \), we could move past \( j \) at most \( \lfloor (q-(j-i))/2 \rfloor \) indices before returning.
+
+    If \( (q-(j-i))/2 \) is an integer, then when we reach the maximum point \( j+(q-(j-i))/2 \) we must immediately return towards \( j \). 
+    Thus, \( k_\ell \neq k_{\ell+1} \) for any \( \ell \), and in particular, for \( \ell = j+(q-(j-i))/2 \).
+\end{proof}
+
+
+%\listofalgorithms
+\begin{landscape}
+\section{List of algorithms}
+\begin{center}
+\fontsize{10}{14}\selectfont
+\renewcommand{\arraystretch}{.9}
+    \begin{tabularx}{\linewidth}{p{5.3cm}Xr}
+    \toprule
+    name & description & reference \\
+    \midrule
+    \ref{alg:name:lanczos} & \nameref{alg:lanczos}  & \cref{alg:lanczos} \\
+    \midrule
+    \ref{alg:name:stieltjes_naive} & \nameref{alg:stieltjes_naive}  & \cref{alg:stieltjes_naive} \\
+    \ref{alg:name:stieltjes} & \nameref{alg:stieltjes}  & \cref{alg:stieltjes} \\
+    \midrule
+    \ref{alg:name:moments} & \nameref{alg:moments}  & \cref{alg:moments} \\
+    \ref{alg:name:cheb_moments} & \nameref{alg:cheb_moments}  & \cref{alg:cheb_moments} \\
+    \ref{alg:name:connection_coeffs} & \nameref{alg:connection_coeffs}  & \cref{alg:connection_coeffs} \\
+    \ref{alg:name:moments_cheb} & \nameref{alg:moments_cheb}  & \cref{alg:moments_cheb} \\
+    \ref{alg:name:moments_lanc} & \nameref{alg:moments_lanc}  & \cref{alg:moments_lanc} \\
+    \ref{alg:name:iq} & \nameref{alg:iq}  & \cref{alg:iq} \\
+    \ref{alg:name:gq} & \nameref{alg:gq}  & \cref{alg:gq} \\
+    \ref{alg:name:aq} & \nameref{alg:aq}  & \cref{alg:aq} \\
+    \ref{alg:name:aaq} & \nameref{alg:aaq}  & \cref{alg:aaq} \\
+    \ref{alg:name:protoalg} & \nameref{alg:protoalg}  & \cref{alg:protoalg} \\
+    \midrule
+    \ref{alg:name:LDL} & \nameref{alg:LDL}  & \cref{alg:LDL} \\
+    \ref{alg:name:streaming_LDL} & \nameref{alg:streaming_LDL}  & \cref{alg:streaming_LDL} \\
+    \ref{alg:name:streaming_banded_prod} & \nameref{alg:streaming_banded_prod}  & \cref{alg:streaming_banded_prod} \\
+    \ref{alg:name:streaming_banded_inv} & \nameref{alg:streaming_banded_inv}  & \cref{alg:streaming_banded_inv} \\
+    \ref{alg:name:streaming_tridiag_square} & \nameref{alg:streaming_tridiag_square}  & \cref{alg:streaming_tridiag_square} \\
+    \ref{alg:name:get_poly} & \nameref{alg:get_poly}  & \cref{alg:get_poly} \\
+    \ref{alg:name:rational_lanczos} & \nameref{alg:rational_lanczos}  & \cref{alg:rational_lanczos} \\
+    \ref{alg:name:lanczos_OR} & \nameref{alg:lanczos_OR}  & \cref{alg:lanczos_OR} \\
+%    \ref{alg:name:} & \ref{alg:}  & \cref{alg:} \\
+    \bottomrule
+\end{tabularx}
+\end{center}
+\end{landscape}
+
+
+\section{List of figures}
+%\listoffiguresp
+\makeatletter
+{
+\fontsize{11}{13}\selectfont
+\@starttoc{lof}% Print List of Figures
+}
+\makeatother
+

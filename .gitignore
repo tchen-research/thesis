@@ -1,0 +1,30 @@
+## Core latex/pdflatex auxiliary files:
+*.aux
+*.log
+*.out
+*.synctex.gz
+
+*.toc
+*.bbl
+*.blg
+
+*.cpt
+*.fdb_latexmk
+*.fls
+
+*.bcf
+*.lof
+*.run.xml
+
+# data files
+*.mat
+*.npz
+*.nc
+
+.ipynb_checkpoints
+__pycache__
+
+
+.ipynb_checkpoints
+__pycache__
+

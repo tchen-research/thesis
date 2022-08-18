@@ -1,0 +1,1067 @@
+\chapter{Spectrum dependent bounds and \\a posteriori error estimates}
+\label{chap:CIF}
+
+
+Thus far, we have not rigorously justified why Lanczos-FA and other non-optimal Lanczos-based methods typically outperform explicit polynomial methods. 
+In \cref{sec:cif_bound,sec:cif_results,sec:cif_examples}, we describe a general technique for bounding the error of Lanczos-based methods for matrix functions via a reduction to the error of Lanczos-FA used to solve a certain linear system of equations.
+Since the error of Lanazos-FA on linear systems is well studied, this approach can be used to derive a priori error bounds as well as a posteriori error bounds and estimates for general functions.
+The effectiveness of our approach is demonstrated by a range of numerical experiments.
+Finally, in \cref{sec:CG_indefinite}, we discuss the error of Lanczos-FA on \emph{indefinite} linear systems where Lanczos-FA is not optimal.
+These bounds explain why Lanczos-FA performs well in theory.
+%In practice, however, such bounds are not computable unless the spectrum of \( \vec{A} \) is known.
+%Fortunately, it is possible to compute a posteriori error bounds and estimates for the Lanczos-FA error on linear systems, for instance, by computing the residual norm.
+
+
+\iffalse
+\subsection*{A bound based on interlacing}
+\label{ex:unif_discrete}
+
+
+Recall \cref{thm:poly_unif} asserts
+\begin{equation}
+\label{eqn:poly_unif}
+    \| f(\vec{A}) \vec{b} - \lan_k(f) \|_2 
+    \leq  2 \min_{\deg p<k} \left( \| f-p \|_{\mathcal{I}(\vec{A})}  \right) \| \vec{b} \|_2.
+\end{equation}
+This bound depends only on the range of eigenvalues \(\mathcal{I}(\vec{A})\) and not on more fine-grained information like the presence of eigenvalue clusters or isolated eigenvalues, which are known to lead to faster convergence.
+As we have seen many times up to this point, such bounds are too pessimistic to capture the true behavior of Lanczos based methods.
+
+From the proof of \cref{thm:poly_unif} we also have that
+\begin{equation}
+    \label{eqn:triangle_ineq1}
+    \| f(\vec{A}) \vec{b} - \lan_k(f) \|
+    \leq \min_{\deg p< k} \left( \| f-p \|_{\Lambda(\vec{A})} + \| f - p \|_{\Lambda(\vec{T})} \right) \| \vec{b} \|. 
+\end{equation}
+This expression is more accurate but less useful; it cannot be used as an \emph{a priori} bound since it involves the eigenvalues of the tridiagonal matrix $\vec{T}$, which depend on $\vec{b}$ nor can it be used as a practical \emph{a posteriori} bound since it involves all  eigenvalues of \( \vec{A} \).
+
+
+It is well known that the eigenvalues of \( \vec{T} \) are interlaced by those of \( \vec{A} \); that is, \( \Lambda(\vec{T}) \subset \mathcal{I}(\vec{A}) \) and between each pair of eigenvalues of \( \vec{T} \) is at least one eigenvalue of \( \vec{A} \).
+With this property in mind, define \( \mathcal{J}_k(\vec{A}) \) as the set of all \( k \)-tuples \( \bm{\mu} = ( \mu_1 , \ldots , \mu_k ) \in \mathbb{R}^k \) that are interlaced by the eigenvalues of \( \vec{A} \). %; that is, \( \lambda_{\text{min}} ( \vec{A} ) < \min_j \mu_j \), \( \lambda_{\text{max}} ( \vec{A} ) > \max_j \mu_j \), and between each consecutive pair \( \mu_i , \mu_j \) there is at least one eigenvalue of \( \vec{A} \).
+Then, we can use \cref{eqn:triangle_ineq1} to write
+\begin{equation}
+    \label{eqn:triangle_ineq2} 
+\| f(\vec{A}) \vec{b} - \lan_k(f) \| 
+ & \leq  \max_{\bm{\mu}\in \mathcal{J}_k(\vec{A})} \min_{\deg p<k} \left( \| f-p \|_{\Lambda(\vec{A})} + \| f - p \|_{\bm{\mu}} \right) \| \vec{b} \|. 
+\end{equation}
+The bound \cref{eqn:triangle_ineq2} is an {\em a priori} error bound, and at least in some special cases, provides more insight than \cref{eqn:poly_unif} in situations where the eigenvalues of $\vec{A}$ are clustered.
+
+
+Consider \( \vec{A} \) with many eigenvalues uniformly spaced through the interval \( [0,1] \) and a single isolated eigenvalue at \( \kappa > 1 \).
+Since the eigenvalues of \( \vec{T}_k \) are interlaced by those of \( \vec A \), there is at most one eigenvalue of \( \vec{T} \) between \( 1 \) and \( \kappa \); that is, \( \Lambda( \vec{A} )\cup\Lambda( \vec{T} ) \) is contained in \( [0,1] \cup \{ \mu , \kappa \} \) for some \( \mu\in[1,\kappa] \).
+We then have
+\begin{align}
+\label{eqn:ex_minimax_bd}
+    \| f(\vec{A}) \vec{b} - \lan_k(f) \| 
+%\leq \max_{\mu\in[1,\kappa]} \min_{\deg p<k} \left( \max_{\lambda\in[0,1]\cup\{\mu,\kappa\}} | f(\lambda)-p(\lambda)| \right) \| \vec{b} \|.
+\leq 2 \max_{\mu\in[1,\kappa]} \min_{\deg p<k} \left( \| f-p \|_{[0,1]\cup\{\mu,\kappa\}} \right) \| \vec{b} \|.
+\end{align}
+For \( \kappa = 5\), \( f(x) = \exp(-x) \), and \( k=6 \), we use a numerical optimizer to determine that the value  maximizing the right hand side of \cref{eqn:ex_minimax_bd} is  \( \mu^*\approx 4.96\).
+In \cref{fig:lanc_poly_approx} we show the error of the Lanczos-FA polynomial along with the optimal uniform polynomial approximations to \( f \) on \( [0,5] \), which contains \( [0,1]\cup\{\mu^*,5\} \).
+As expected, the bound from \cref{eqn:ex_minimax_bd}  is significantly better than that from the uniform approximation.
+
+\begin{figure}[ht]
+    \includegraphics[width=.97\textwidth]{CIF_imgs/lanc_poly_approx_diff.pdf}
+
+   \caption{
+    Comparison of errors of degree 5 polynomial approximations to \( f(x) = \exp(-x) \).
+    \emph{Legend}:
+    \emph{Remarks}: 
+    Note that the Lanczos-FA approximation becomes very inaccurate on \( (1,5) \) which allows a smaller error on the eigenvalues of $\vec A$, which is the only error that impacts our approximation to $f(\vec A)\vec b$.
+    As a result, the uniform approximation on \( [0,1] \cup \{\mu^*,5\} \) is a much better bound for the Lanczos-FA error than the uniform approximation on \( [0,5] \), which remains equally accurate over the entire interval \([0,5]\). 
+    }
+    \label{fig:lanc_poly_approx}
+\end{figure}
+\fi
+
+\section{An integral representation of the Lanczos-FA error}%and the Cauchy integral formula}
+\label{sec:cif_bound}
+
+Assuming \( f : \mathbb{C} \rightarrow \mathbb{C} \) is analytic in a neighborhood of the eigenvalues of \( \vec{A} \) and \( \Gamma \) is a simple closed curve or union of simple closed curves inside that neighborhood and enclosing the eigenvalues of \( \vec{A} \), the Cauchy integral formula states that
+\begin{equation}
+    \label{eqn:fofACIF1}
+    \fA\vec{v} = - \frac{1}{2\pi \ii} \oint_{\Gamma} f(z) (\vec{A} - z \vec{I} )^{-1} \vec{v} \, \d{z}.
+\end{equation}
+If \( \Gamma \) also encloses the eigenvalues of \( \vec{T} \) we can similarly write the Lanczos-FA approximation as
+\begin{equation}
+\label{eqn:fofT_CIF}
+%    \vec{Q} \fT \vec{Q}^\cT \vec{v}
+    \lan_k(f)
+    = - \frac{1}{2\pi \ii} \oint_{\Gamma} f(z) \vec{Q} (\vec{T} - z \vec{I} )^{-1} \vec{Q}^\cT \vec{v} \, \d{z} .
+\end{equation}
+Observing that the integrand of \cref{eqn:fofACIF1} contains the solution to the shifted linear system \( (\vec{A}-z\vec{I}) \vec{x} = \vec{v} \) while  \cref{eqn:fofT_CIF} contains the Lanczos-FA approximation to the solution, we make the following definition.
+\begin{definition}\label{def:err}
+For \( z \in \mathbb{C} \), %let \( h_z (x) = 1/(x-z) \).
+define the \( k \)-th Lanczos-FA error and residual for the linear system \( (\vec{A}-z\vec{I}) \vec{x} = \vec{v} \) as,
+\begin{align*}
+    \err_k(z,\vec{A},\vec{v}) &:= (\vec{A} - z \vec{I})^{-1} \vec{v} - \vec{Q}(\vec{T}-z\vec{I})^{-1}\vec{Q}^\cT \vec{v}%\lan_k ( h_z )
+    ,\\
+    \Res_k(z,\vec{A},\vec{v}) &:= \vec{v} - (\vec{A} - z \vec{I}) \vec{Q}(\vec{T}-z\vec{I})^{-1}\vec{Q}^\cT \vec{v}.%\,\lan_k ( h_z ).
+\end{align*}
+As with the Lanczos-FA approximation, we will typically omit the arguments \( \vec{A} \) and \( \vec{v} \), and in the case \( z = 0 \), we will often write \( \err_k \) and \( \Res_k \).
+\end{definition}
+%\Tyler{Should we mention CG at some point?} \Anne{No need.}
+With \cref{def:err} in place, the error of the Lanczos-FA approximation to \( \fA\vec{v} \) can be written as
+\begin{equation}
+    \label{eqn:lanczos_FA_error}
+    \fA \vec{v} - \lan_k(f)%\vec{Q} f( \vec{T} ) \vec{Q}^{\cT} \vec{v}
+    = - \frac{1}{2\pi \ii} \oint_{\Gamma} f(z) \, \err_k(z) \, \d{z}.
+\end{equation}
+Therefore, if for every $z\in\Gamma$ we are able to understand the convergence of Lanczos-FA on the linear system \( (\vec{A}-z\vec{I}) \vec{x} = \vec{v} \), then this formula lets us understand the convergence of Lanczos-FA for \( \fA\vec{v} \).
+To simplify bounding \cref{eqn:lanczos_FA_error}, we will write $\err_k(z)$ for all  \( z\in\Gamma \) in terms of the error in solving a single shifted linear system.
+
+%We now turn our attention to the shifted linear system \( (\vec{A}-z \vec{I}) \vec{y} = \vec{v} \), where \( z \) is arbitrary and possibly complex.
+To do this, we use the fact that the Lanczos factorization \cref{eqn:lanczos_three_term} can be shifted, even for complex \( z \), to obtain
+\begin{equation}
+    \label{eqn:shifted_lanczos_factorization}
+    ( \vec{A} - z \vec{I} ) \vec{Q}
+    = \vec{Q} ( \vec{T} - z \vec{I} ) + \beta_{k-1} \vec{q}_{k} \vec{e}_{k-1}^\rT.
+\end{equation}
+That is, Lanczos applied to \( (\vec{A},\vec{v}) \) for \( k \) steps produces output \( \vec{Q} \) and \( \vec{T} \) satisfying \cref{eqn:lanczos_three_term} while Lanczos applied to \( (\vec{A} - z \vec{I}, \vec{v}) \) for \( k \) steps produces output \( \vec{Q} \) and \( \vec{T}-z \vec I \) satisfying \cref{eqn:shifted_lanczos_factorization}. %, where \( \vec{Q} \) and \( \vec{T} \) are the same in both factorizations. \Cam{Are these the ones produced by iterating on $\vec A$ right? We should say explicitly.}
+%In the case that \( z \) is not real, we interpret the inner products in the Lanczos method as complex inner products linear in the first argument; i.e. \( \langle a \vec{x} , \vec{y} \rangle = a \langle \vec{x}, \vec{y} \rangle \) for all \( a \in \mathbb{C} \).
+Using this fact, we have the following well known lemma.
+\begin{lemma}
+    \label[lemma]{thm:shifted_lanczos_equivalence}
+For all \( z \) where \( \vec{T} - z \vec{I} \) is invertible, 
+\begin{equation*}
+    \Res_k(z) 
+    = \| \vec{v} \|_2 \left( \frac{(-1)^{k}}{\det(\vec{T} -z \vec{I}) }\prod_{j=0}^{k-1} \beta_j \right) \vec{q}_{k}.
+\end{equation*}
+\end{lemma}
+\begin{proof}
+    From \cref{eqn:shifted_lanczos_factorization}, and the fact that $\vec{Q}$'s first column is $\vec{v}/\|\vec{v}\|_2$, it is clear that,
+    \begin{align*}
+        (\vec{A} - z\vec{I}) \vec{Q}(\vec{T}-z\vec{I})^{-1}\vec{Q}^\cT \vec{v}
+        &= (\vec{A}-z \vec{I}) \vec{Q} (\vec{T} - z \vec{I})^{-1} \| \vec{v} \|_2 \vec{e}_0
+        \\&= \vec{Q} \| \vec{v} \|_2 \vec{e}_0 + \beta_k \vec{q}_{k} \vec{e}_{k-1}^\cT (\vec{T} - z \vec{I})^{-1} \| \vec{v} \|_2 \vec{e}_0
+        \\&= \vec{v} + \beta_k \vec{q}_{k} \vec{e}_{k-1}^\cT (\vec{T} - z \vec{I})^{-1} \| \vec{v} \|_2 \vec{e}_0.
+    \end{align*}
+
+    Using the formula \( (\vec{T} - z \vec{I} )^{-1} = (1/\!\det(\vec{T} - z \vec{I})) \operatorname{adj}( \vec{T} - z \vec{I} ) \), we see that
+    \begin{equation*}
+        \vec{e}_{k-1}^\cT (\vec{T} - z \vec{I})^{-1} \vec{e}_0
+        = \frac{(-1)^{k-1}}{\det( \vec{T} - z \vec{I} )}\prod_{j=0}^{k-2} \beta_j.
+    \end{equation*}
+    The result then follows by combining these expressions.
+\end{proof}
+We use \cref{thm:shifted_lanczos_equivalence} to relate \( \err_k(z) \) to \( \err_k(w) \) for any $z,w \in \mathbb{C}$.
+
+
+\begin{definition}
+    \label{def:hwz}
+For $w,z\in\mathbb{C}$ define $h_{w,z}:\R\to\mathbb{C}$ and $h_z:\R\to\mathbb{C}$ by
+\begin{equation*}
+    h_{w,z}(x) := \frac{x-w}{x-z}
+    ,\qquad
+    h_z(x):= \frac{1}{x-z}.
+\end{equation*}
+\end{definition}
+
+\begin{corollary} 
+    \label[corollary]{thm:shifted_linear_system_error}
+For all \( z , w \in \mathbb{C} \), where \( \vec{A} - z \vec{I} \) and \( \vec{A} - w \vec{I} \) are both invertible,
+%\( \vec{A} - b \vec{I} \) is invertible. Then,
+\begin{align*}
+    \err_k(z)
+    &= \det(h_{w,z}(\vec{T})) \,h_{w,z}(\vec{A}) 
+    \,\err_k(w)
+    \\
+    \Res_k(z)
+    &= \det(h_{w,z}(\vec{T}))
+    \,\Res_k(w).
+\end{align*}
+\end{corollary}
+
+\begin{proof}
+By \cref{thm:shifted_lanczos_equivalence},
+\begin{equation*}
+    \det(\vec{T} - z\vec{I}) \,\Res_k (z) = \det(\vec{T} - w \vec{I}) \,\Res_k (w). 
+\end{equation*}
+Thus,
+\begin{equation*}
+    \Res_k (z) = \frac{\det(\vec{T} - w\vec{I})}{\det(\vec{T} - z\vec{I})} \,\Res_k (w) = \det(h_{w,z}(\vec{T})) \,\Res_k (w) .
+%    \frac{\det(\vec{T}-w\vec{I})}{\det(\vec{T} - z\vec{I})} (\vec{A} - w\vec{I}) \err_k (w)
+%    = (\vec{A} - z \vec{I}) \err_k(z)
+\end{equation*}
+Noting that \( \Res_k (z) = (\vec{A}-z\vec{I}) \,\err_k(z) \) and 
+\( \Res_k (w) = (\vec{A}-w\vec{I}) \,\err_k(w) \), we obtain the relation between the
+errors,
+%Thus,
+\begin{align*}
+    \err_k(z)
+    &= \det(h_{w,z}(\vec{T})) (\vec{A} - z \vec{I})^{-1} ( \vec{A} - w \vec{I})\, \err_k ( w ) 
+    \\&= \det(h_{w,z}(\vec{T}))  \,h_{w,z}(\vec{A}) \,\err_k(w) .
+    \tag*{\qedhere}
+\end{align*}
+\end{proof}
+
+In summary, combining \cref{eqn:lanczos_FA_error} and \cref{thm:shifted_linear_system_error} we have the following corollary.
+This result is by no means new, and appears throughout the literature; see for instance \cite{frommer_simoncini_09} and \cite[Theorem 3.4]{frommer_guttel_schweitzer_14}.
+\begin{corollary}
+\label[corollary]{thm:integral_error_vec} 
+Suppose \( \vec{A} \) is a Hermitian matrix and \( f : \mathbb{C} \rightarrow \mathbb{C} \) is a function analytic in a neighborhood of the eigenvalues of \( \vec{A} \) and \( \vec{T} \), where  \( \vec{T} \) is the tridiagonal matrix output by Lanczos run on \( \vec{A},\vec{v} \) for \( k \) steps.
+Then, if\/ \( \Gamma \) is a simple closed curve or union of simple closed curves inside this neighborhood and enclosing the eigenvalues of \( \vec{A} \) and \( \vec{T} \) and \( w\in\mathbb{C} \) is such that \( w \not\in \Lambda(\vec{T})\cup\Lambda \),
+\begin{equation*}
+    \fA \vec{v} - \lan_k(f)
+    = \left( - \frac{1}{2\pi \ii} \oint_{\Gamma} f(z) \det(h_{w,z}(\vec{T})) \,h_{w,z}(\vec{A}) \,\d{z} \right) \, \err_k(w).
+\end{equation*}
+\end{corollary}
+%\Cam{Should we make the above equation a corrloary?}
+
+\subsection{A reduction to linear system error}
+
+Our main result is a flexible bound for the  Lanczos-FA error, obtained by bounding the integral in the right-hand side of \cref{thm:integral_error_vec}. As we will see in \cref{sec:cif_results}, we can instantiate this theorem to obtain effective a priori and a posteriori error bounds in many settings.
+% the Cauchy integral formula \cref{eqn:lanczos_FA_error}, and bounding each $\err_k(z)$ term with $\err_k(w)$ for a single choice of $w$.
+%Given a scalar function \( h:\R\to\R \) and set \( S\subset \R \), we denote the infinity norm of \( h \) on \( S \) by \( \|h\|_S \); i.e. \( \|h\|_S := \sup_{x\in S}| h(x)| \).
+%Using this notation, we then have the following theorem.
+\begin{theorem}
+\label{thm:err_int}
+In the setting of \cref{thm:integral_error_vec}, if for some $S,S_0,\ldots,S_{k-1} \subset \mathbb{R}$ we have \( \Lambda\subset S_0\ \) and \( \lambda_i(\vec{T}) \in S_i \) for  \( i=0,\ldots, k-1 \), then
+\begin{equation*}
+    \| \fA\vec{v} - \lan_k(f) \|
+    %\leq \underbrace{\vphantom{ \bigg| }\left( \frac{1}{2\pi}\oint_{\Gamma} |f(z)| \cdot \left(\prod_{i=0}^{k-1} \|h_{w,z}\|_{S_i}\right) \cdot \|h_{w,z}\|_{S_0} \cdot | \d{z} | \right)}_{\text{integral term}}  \hspace{-1.2 em}\underbrace{\vphantom{ \Bigg| } \| \err_k(w) \| . \hspace{-.4em} }_{\text{linear system error}} \hspace{-.5em}
+    \leq \underbrace{\vphantom{ \Bigg| }\Bigg( \frac{1}{2\pi}\oint_{\Gamma} |f(z)| \left(\prod_{i=0}^{k-1} \| h_{w,z}\|_{S_i}\right) \|h_{w,z}\|_{S} | \d{z} | \bigg)}_{\text{integral term}} \hspace{-.2em}\underbrace{\vphantom{ \Bigg| } \| \err_k(w) \|.}_{\text{linear system error}}
+\end{equation*}
+\end{theorem}
+Analogously, we have a bound for Gaussian quadrature
+\begin{theorem}
+\label{thm:err_int_GQ}
+In the setting of \cref{thm:integral_error_vec}, if for some $S,S_0,\ldots,S_{k-1} \subset \mathbb{R}$ we have \( \Lambda\subset S_0\ \) and \( \lambda_i(\vec{T}) \in S_i \) for  \( i=0,\ldots, k-1 \), then
+\begin{equation*}
+    | \vec{v}^\cT\fA\vec{v} - \int f \,\d\qq[g]{\Psi}{2k-1} |
+    \leq  \underbrace{\vphantom{\Bigg|}\Bigg( \frac{1}{2\pi} \oint_{\Gamma} | f(z) |  \left( \prod_{i=0}^{k-1} \|h_{w,z}\|_{S_i}^2  \right) \| h_z \|_{S} |\d{z}| \Bigg)}_{\text{integral term}} \hspace{-.2em}\underbrace{\vphantom{\Bigg|} \| \Res_k(w) \|_2^2.}_{\text{linear system error}}  \label{eqn:err_quad_int}
+\end{equation*}
+\end{theorem}
+
+
+The above bounds depend on our choices of $\Gamma$, $w$, and the sets $S,S_0,\ldots,S_{k-1}$, which must contain the eigenvalues of $\vec A$ and $\vec T_k$. 
+The sets $S,S_0,\ldots,S_{k-1}$ should be chosen based on the information we have about $\vec A$ and $\vec T_k$. 
+For example, we could take all these sets to be the eigenvalue range $\mathcal{I}( \vec A)$. 
+If we have more information a priori about the eigenvalues of $\vec A$, we can obtain a tighter bound by choosing smaller $S$, with correspondingly lower $\|h_{w,z}\|_{S}$. 
+For an a posteriori bound, we can simply set $S_i = \{ \lambda_i(\vec T_k) \}$, for $i = 0,\ldots,k-1$. 
+This gives an optimal value for $\|h_{w,z}\|_{S}$. Both approaches are detailed in \cref{sec:cif_results}.
+
+We emphasize that, in both bounds, the integral term and linear system error term in the theorem are entirely decoupled.
+Thus, once the integral term is computed, bounding the error of Lanczos-FA for \( \fA\vec{v} \) is reduced to bounding \( \| \err_k(w) \| \), and if the integral term can be bounded independently of \( k \), \cref{thm:err_int} implies that, up to a constant factor, the Lanczos-FA approximation to \( \fA\vec{v} \) converges at least as fast as \( \| \err_k(w) \| \).
+
+Note that \cref{thm:err_int} depends on $\|\err_k(w)\|$ whereas \cref{thm:err_int_GQ} depends on $\|\Res_k(w)\|_2^2$. 
+Thus, heuristically, we can expect the quadratic form to converge at a rate twice that of the norm of the error of the matrix function.
+This is exacted as Gaussian quadrature is exact for polynomials of degree \( 2k-1 \) whereas Lanczos-FA is exact for polynomials of degree \( k-1 \). 
+In the case that the contour $\Gamma$ does not pass through \( \mathcal{I} \), the bound of \cref{eqn:err_quad_int} is essentially  as easy to compute as that of  \cref{thm:err_int}.
+However, if the contour passes through \( \mathcal{I} \) at \( w \), to ensure that \( S \) does not contain points in the contour, it must be chosen as a set other than $\mathcal{I}$. This set must contain all of $\vec A$'s eigenvalues and we must bound its distance to the contour (in particular, to $w$).
+
+\begin{proof}[Proof of \cref{thm:err_int}]
+    We begin by taking the norm on both sides of \cref{thm:integral_error_vec}.
+    Applying the triangle inequality for integrals and using the fact that \( \|\,\cdot\,\| \) is induced by a matrix with the same eigenvectors as \( \vec{A} \) (see \cref{thm:norm_exchange}) we have
+\begin{equation}
+    \label{eqn:integral_error}
+    \| \fA \vec{v} - \lan_k(f) \|
+    \leq \left( \frac{1}{2\pi}\oint_{\Gamma} |f(z)|\mkern1mu  |\!\det(h_{w,z}(\vec{T}))|  \| h_{w,z}(\vec{A}) \|_2  |\d{z} | \right) \| \err_k(w) \| .
+\end{equation}
+Next, since %as an immediate consequence of the definition of \( \| h_{w,z} (\vec{A}) \|_2 \), if 
+\( \Lambda \subseteq S \) then
+\begin{equation*}
+%    \label{eqn:hwz_qwz}
+    \| h_{w,z}(\vec{A}) \|_2 = \max_{i=0,\ldots, n-1} | h_{w,z}(\lambda_i(\vec{A})) | \leq \|h_{w,z}\|_{S},
+\end{equation*}
+and similarly, if  \( \lambda_i(\vec{T}) \in S_i \) for \( i=0, \ldots , k-1 \), then 
+\begin{equation}
+    \label{eqn:dkwz_qwz}
+    |\!\det(h_{w,z}(\vec{T}))| = \left| \prod_{i=0}^{k-1} h_{w,z}(\lambda_i(\vec{T})) \right| \leq
+    \prod_{i=0}^{k-1} \|h_{w,z}\|_{S_i}.
+\end{equation}
+Combining these inequalities yields the result.
+\end{proof}
+%root-condition number bound on favorable spectra. 
+
+
+\begin{proof}[Proof of \cref{thm:err_int_GQ}]
+Recall
+    \begin{equation*}
+    \vec{v}^\cT \lan_k(f) 
+    = \vec{v}^\cT \vec{Q} \fT \vec{Q}^\cT \vec{v}
+    = \| \vec{v} \|_2^2\i: \vec{e}_0^\cT \fT \vec{e}_0
+    = \int f \,\d\qq[g]{f}{2k-1}.
+\end{equation*}
+
+Since \( \vec{A} \) is Hermitian, \( (\vec{A} - z\vec{I})^\cT = \vec{A} - \overline{z} \vec{I} \). 
+Thus, since 
+\begin{equation*}
+    \vec{v}^\cT (\vec{A} - z\vec{I})^{-1}
+    = ( ( \vec{A} - \overline{z} \vec{I}   )^{-1} \vec{v} )^\cT
+    = ( \lan_k(h_{\overline{z}}) + \err_k(\overline{z}) ) \vec{v} )^\cT
+\end{equation*}
+we can expand the quadratic form error as
+\begin{equation*}
+    \vec{v}^\cT \err_k(z)
+    = \vec{v}^\cT ( \vec{A} - z \vec{I})^{-1} \Res_k(z)
+    = \left( \lan_k ( h_{\overline{z}} ) ) + \err_k(\overline{z}) \right)^\cT \Res_k(z).
+\end{equation*}
+Now, by definition, \( \lan_k ( h_{\overline{z}}(x) )  = \vec{Q} h_{\overline{z}}(\vec{T}) \vec{Q}^\cT \vec{v} \) and by \cref{thm:shifted_lanczos_equivalence} \( \Res_k(z) \) is proportional to \( \vec{q}_{k+1} \).
+Thus, since, at least in exact arithmetic, \( \vec{q}_{k+1} \) is orthogonal to $\vec{Q}$,
+\begin{equation*}
+    \vec{v}^\cT \err_k(z)
+    = \err_k(\overline{z})^\cT \Res_k(z)
+    = (( \vec{A} - \overline{z}\vec{I})^{-1}  \Res_k(\overline{z}))^\cT \Res_k(z).
+\end{equation*}
+Next, using \cref{thm:shifted_linear_system_error} and the fact that \( h_{w,z}(x) h_{w,\overline{z}}(x) = |h_{w,z}(x)|^2 \) for \( w,x\in\R \), 
+\begin{equation*}
+    \vec{v}^\cT \err_k(z)
+    = |\!\det(h_{w,z}(\vec{T}))|^2 \Res_k(w)^\cT ( \vec{A} - z\vec{I})^{-1} \Res_k(w).
+\end{equation*}
+
+We then have,
+\begin{equation*}
+    | \vec{v}^\cT \err_k(z) |
+    \leq | \! \det(h_{w,z}(\vec{T})) |^2  \| ( \vec{A} - z\vec{I})^{-1} \|_2  \| \Res_k(w) \|_2^2.
+\end{equation*}
+\iffalse
+which gives
+\begin{equation*}
+    | \vec{v}^\cT \fA \vec{v} - \vec{v}^\cT \lan_k(f) |
+    &\leq \left( \frac{1}{2\pi} \oint_{\Gamma} | f(z) | \cdot |\det(h_{w,z}(\vec{T}))|^2 \cdot \| h_z(\vec{A}) \|_2 \cdot |\d{z}| \right) \| \Res_k(w) \|_2^2.
+\end{equation*}
+\fi
+Applying the Cauchy integral formula we therefore obtain a bound for the quadratic form error analogous to \cref{thm:err_int} we obtain the result.
+\end{proof}
+
+
+\subsection{Comparison with previous work}
+%\Tyler{Is this okay here? If we should move it back to after section 2, I think it should be its own section and perhaps beefed up a bit.}
+
+%\Cam{I think before this section we need to at least say what our framework is, outside the abstract. Should we put this at the end of section 2? Otherwise we keep comparing things prior work does in comparision to what we do, but we haven't talked about our approach at all yet.}
+
+Our framework for analyzing Lanczos-FA has four properties which differentiate it from past work:
+(i) it is applicable to a wide range of functions, 
+(ii) it yields a priori bounds dependent on fine-grained properties of the spectrum of \( \vec{A} \) such as clustered or isolated eigenvalues, 
+(iii) it can be used a posteriori as a practical stopping criterion,
+and (iv) it is applicable when computations are carried out in finite precision arithmetic. %when used with a perturbed Lanczos recurrence.
+To the best of our knowledge, no existing analysis satisfies more than two of these properties simultaneously.
+In this section, we provide a brief overview of the most relevant past work.
+
+Most directly related to our framework is a series of works which also make use of the shift-invariance of Krylov subspaces when \( f \) is a Stieltjes function\footnote{A function \( f \) defined on the positive real axis is a Stieltjes function if and only if \( f(x) \geq 0 \) for all $x\in\R$ and \( f \) has an analytic extension to the cut plane \( \mathbb{C} \setminus (-\infty,0] \) satisfying \( \Im(f(x)) \leq 0 \) for all \( x \) in the upper half plane \cite[Theorem 3.2]{berg_07} \cite[p. 127 attributed to Krein]{aheizer_65}.} \cite{frommer_guttel_schweitzer_14a,frommer_schweitzer_15,ilic_turner_simpson_09} or a certain type of rational function \cite{frommer_kahl_lippert_rittich_13,frommer_simoncini_08b,frommer_simoncini_09}.
+These analyses are applicable a priori and a posteriori and in fact allow for corresponding error \emph{lower bounds} as well.
+However, these bounds cannot be applied to more general functions, and the impact of a perturbed Lanczos recurrence in finite precision is not considered.
+
+The most detailed generally applicable analysis is \cite{musco_musco_sidford_18}, which extends \cite{druskin_knizhnerman_91,druskin_knizhnerman_95} and studies \cref{thm:poly_unif}, the classical bound for Lanczos-FA based on polynomial approximation on \( \mathcal{I} \), when Lanczos is run in finite precision arithmetic.
+However, as we have seen throughout this thesis, \cref{thm:poly_unif} is often too pessimistic in practice as it does not depend on the fine-grained properties about the distribution of eigenvalues.
+Another generally applicable analysis is \cite{hochbruck_lubich_selhofer_98}, which suggests replacing \( \err_k(z) \) with \( \Res_k(z) \) in \cref{eqn:lanczos_FA_error}.
+Since \( \Res_k(z) \) can be computed once the outputs of Lanczos have been obtained, the resulting integral can be computed (or at least approximated by a quadrature rule).
+However, this approach does not take into account the actual relationship between \( \Res_k(z) \) and \( \err_k(z) \), and therefore gives only an estimate of the error, not a true bound.
+Another Cauchy integral formula based approach is \cite{hochbruck_lubich_97} which shows that Lanczos-FA exhibits superlinear convergence for the matrix exponential and certain other specific analytic functions.
+
+There are a variety of other bounds specialized to individual functions.
+For example, it is known that if \( \vec{A} \) is nonnegative definite and \( t > 0 \), then the error in the Lanczos-FA approximation for the matrix exponential \( \exp( t \vec{A}) \vec{v} \) can be related to the maximum over \( s \in [0,t] \) of the error in the  optimal approximation to \( \exp( s \vec{A}) \vec{v} \) over a Krylov space of slightly lower dimension \cite{druskin_greenbaum_knizhnerman_98}.
+More recent work involving the matrix exponential are \cite{jia_lv_14,jawecki_auzinger_koch_19,jawecki_21}.
+%in exact and finite precision arithmetic \cite{druskin_greenbaum_knizhnerman_98}.
+There is also a range of work which analyzes the convergence of Lanczos-FA and related methods for computing the square root and sign functions \cite{boricci_99,borici_03,eshof_frommer_lippert_schilling_van_der_vorst_02}.
+%Further results for the matrix exponential \cite{orecchia_sachdeva_nisheeth_12}.
+
+\section{Applying our framework}
+\label{sec:cif_results}
+
+We proceed to show how to effectively bound the integral term of \cref{thm:err_int}, to give  a priori and a posteriori  bounds on the Lanczos-FA error, assuming accurate bounds on \( \| \err_k(w) \| \) are available.
+Throughout this chapter, we assume $w\in\mathbb{R}$ and we do not discuss in detail how to bound this linear system error  -- there are many known approaches, both a priori and a posteriori, and the best bounds to use are often context dependent. 
+Some of these approaches are similar to those used for Lanczos-OR in \cref{sec:error_OR}.
+
+
+To use \cref{thm:err_int}, we must evaluate or bound \( \|h_{w,z}\|_{S_i} \).
+Towards this end, we introduce the following lemmas, which apply when  $S_i$ is an interval.
+These lemmas are also useful when $S_i$ is a union of intervals -- in that case $\|h_{w,z}\|_{S_i}$ is bounded by the maximum bound on any of these intervals.
+i
+\begin{lemma}
+    \label[lemma]{thm:Q_wz_value}
+    For any interval \( [a,b] \subset \mathbb{R} \), if \( z \in \mathbb{C} \setminus [a,b] \) and \( w\in\mathbb{R} \), we have
+\begin{equation*}
+    \|h_{w,z}\|_{[a,b]}
+    %Q_{w,z} = \max_{x \in \mathcal{I} } \left| \frac{x-w}{x-z} \right| 
+    = \max \left\{ 
+    \left| \frac{a-w}{a-z} \right|, 
+    \left| \frac{b-w}{b-z} \right|,
+    \left( \left| \frac{z-w}{\Im(z)} \right|~\text{ if } x^{*} \in [a,b] ~\text{else}~0 \right)
+    \right\}
+\end{equation*}
+where 
+\begin{equation*}
+    x^* := \frac{\Re(z)^2 + \Im(z)^2 - \Re(z) w}{\Re(z)-w}.
+\end{equation*}
+
+\end{lemma}
+\begin{proof}
+    Note that for $x\in\mathbb{R}$, 
+\begin{equation*}
+    | h_{w,z} (x) |^2 = \left| \frac{x-w}{x-z} \right|^2 = \frac{(x-w )^2}{( x - \Re(z) )^2 + \Im(z)^2} ,
+\end{equation*}
+and
+\begin{equation*}
+    \frac{\d}{\d{x}} \left( | h_{w,z} (x) |^2 \right) = \frac{[ (x - \Re(z) )^2 + \Im(z )^2 ]2(x-w) - (x-w )^2 2 ( x - \Re(z) )}{[ (x - \Re(z) )^2 + \Im(z )^2 ]^2} .
+\end{equation*}
+%Define 
+%\begin{equation*}
+%    g(x) = \frac{x-w}{\sqrt{(\Re(z)-x)^2 + \Im(z)^2}}.
+%\end{equation*}
+%    g'(x) = \frac{\Im(z)^2 + (\Re(z)-w)(\Re(z)-x)}{(\Re(z)-x)^2 + \Im(z)^2}.
+Aside from \( x=w \), where \( h_{w,z} (x) = 0 \), the only value \( x \in \R \) for which \( \frac{\d}{\d{x}} \left( | h_{w,z} (x) |^2 \right) = 0 \) is \( x^* \).
+%is the only value \( x\in \R \) for which \( g'(x) = 0 \).
+This implies that the only possible local extrema of  \( | h_{w,z} (x)|  \) on \( [a,b] \) are  \( a \), \( b \), and \( x^* \) if \( x^* \in [a,b] \).
+Substituting the expression for \( x^{*} \) into that for \( | h_{w,z} ( x^{*} ) | \), one finds, after some algebra, that \( | h_{w,z} ( x^{*} ) | = | z-w | / | \Im (z) | \).
+%We have that \( | h_{w,z}(x) | = |g(x)| \)
+%Moreover, \( g(x) \) only changes sign at \( x=w \) and \( g(w) = 0 \), 
+%so the only possible local maxima of \( | h_{w,z}(x) | \) on \( [a,b] \) are also  \( %a \), \( b \), and \( x^* \) if \( x^* \in [a,b] \).
+%The result follows from the fact that \( | g(x^*) | = |z-w|/|\Im(z)| \).
+\iffalse
+\Tyler{the last sentence could be replaced by the full derivation:
+It remains to show that \( | h_{w,z} (x^*) | = |z-w|/|\Im(z)| \).
+Indeed, this holds since
+\begin{align*}
+    g(x^*)
+    &= \frac{\Re(z) + \frac{\Im(z)^2}{\Re(z)-w} - w}{\sqrt{ \left( \Re(z) - \left( \Re(z) + \frac{\Im(z)^2}{\Re(z)-w} \right)\right)^2 + \Im(z)^2 }}
+    \\&= \operatorname{sign}(\Re(z)-w)\frac{(\Re(z)-w)^2 + \Im(z)^2}{|\Im(z)|\sqrt{(\Re(z)-w)^2 + \Im(z)^2}}
+    \\&= \operatorname{sign}(\Re(z)-w) \left| \frac{z-w}{\Im(z)} \right|.
+\end{align*}
+}
+\fi
+\end{proof}
+
+\begin{lemma}
+    \label[lemma]{thm:level_sets}
+Fix \( r >0 \), let  \( \mathcal{D}(c,t) \) be the disc in the complex plane centered at \( c \) with radius \( t \geq 0\), and define
+\begin{equation*}
+    X_r = \bigcup_{ x \in [a,b]  } \mathcal{D}\left( x, \frac{|x-w|}{r} \right).
+\end{equation*}
+%where \( \mathcal{D}(c,t) \) is the disc centered at \( c \) with radius \( t \geq 0\).
+Then for \( z \in \mathbb{C} \setminus X_r \), we have
+\begin{equation*}
+    \|h_{w,z}\|_{[a,b]} 
+    %= \max_{x \in \mathcal{I}} \left| \frac{x-w}{x-z} \right| 
+    \leq r.
+\end{equation*}
+In particular, if \( z \) is on the boundary of \( X_r \), then \( \|h_{w,z}\|_{[a,b]}  = r \).
+\end{lemma}
+
+\begin{proof}
+Let \( z \in \mathbb{C}\setminus X_r \) and pick any \( x \in [a,b] \).
+ Since \( z \not\in \mathcal{D}(x,|x-w|/r) \) it follows that \( |z-x| > |x-w|/r \) and therefore \( |h_{w,z}(x)| = |x-w|/|x-z| < r \).
+Maximizing over \( x \) yields the result.
+
+If \( z\) is on the boundary of \( X_r \),  then for some \( x \in [a,b] \), \( |z-x| = |x-w|/r \), which means that for this \( x \), \(|h_{w,z}(x)| = r \).
+\end{proof}
+Note that if \( r \leq 1 \) and \( w \in \R\setminus[a,b] \), then the region described in \cref{thm:level_sets} is simply a disc about \( b \) if \( w < a\) or a disc about \( a \) if \( w > b \).  If \( r > 1 \) and \( w \) is real, then the region described is that in the discs about \( a \) and \( b \) and between the two external tangents to these two discs.
+
+
+Similar to \cref{thm:Q_wz_value} we have the following bound on $\|h_z\|_{S_i}$ when $S_0$ is an  interval.
+This allows a bound on \cref{eqn:err_quad_int} analogous to \cref{eqn:integral_error}.
+\begin{lemma}
+\label[lemma]{thm:Qz}
+For any interval $[a,b]\subset \R$, if $z\in\mathbb{C}\setminus[a,b]$, we have    
+    %Fix \( z \in \mathbb{C} \setminus [a,b] \) and \( w\in\mathbb{R} %\).
+    \begin{equation*}
+        \| h_z \|_{[a,b]}
+    =
+    \begin{cases}
+        1/|\Im(z)| &  \Re(z) \in \mathcal{I} \\
+        1/|a-z| & \Re(z) < a \\
+        1/|b-z| & \Re(z) > b
+    \end{cases}
+\end{equation*}   
+\end{lemma}
+
+
+
+\subsection{A priori bounds}
+
+We can use \cref{thm:err_int} to give a priori bounds, as long as we choose \( S \) and \( S_i \), \( i = 0, \ldots, k-1 \) independently of $\vec b$ (and in turn $\vec{T}$). %\Cam{In intro we complain that certain bounds depend on the spectrum making them bad a priori bounds. Should we reword this a bit?}
+
+The simplest possibility is to take \( S = S_i = \mathcal{I} \).
+In this case, as an immediate consequence of \cref{thm:err_int,thm:level_sets} we have the following a priori bound,
+\begin{corollary}
+    \label[corollary]{thm:disk}
+    Suppose that for some \( w < \lmin \), \( f \) is analytic in a neighborhood of \( \mathcal{D}(\lmax,\lmax-w) \).
+%on \( X_1 = \mathcal{D}(\lmax, \lmax) \).
+    Then, taking \( \Gamma \) to be the boundary of this disk, 
+%\( \Gamma = \{ r \left( \exp(i t) + r \right): r = \lambda_{\text{max}}, t \in [0,\pi] \} \),
+   \begin{align*}
+        \| \fA\vec{v} - \lan_k(f) \|
+        &\leq \left( \frac{1}{2\pi} \oint_{\Gamma} |f(z)| |\d{z}| \right) \| \err_k(w) \|
+        \\&\leq \left( (\lmax-w) \: \max_{z\in\Gamma}|f(z)|\right) \| \err_k(w) \|.
+    \end{align*}
+\end{corollary}
+\begin{proof}
+To obtain the first inequality  observe that \cref{thm:level_sets} with \( [a,b] = \mathcal{I} \) implies \( \|h_{w,z}\|_{\mathcal{I}} = 1 \) on this contour.
+The second inequality follows since the length of \( \Gamma \) is \( 2 \pi (\lmax-w) \).
+\end{proof}
+%We remark that taking \( \Gamma \) as the \( \|h_{w,z}\|_{\mathcal{I}} = 1 \) level curve gives a somewhat shorter contour which can be used in place of the disk used in \cref{thm:disk}.
+%This will often yield a slightly better bound, albeit at the cost of a more complicated parameteriztion of the contour.
+This bound is closely related to \cite[Theorem 6.6]{frommer_guttel_schweitzer_14a} which bounds the error in Lanczos-FA for Stieltjes
+functions in terms of the error in the Lanczos approximation for a certain linear system.
+
+\iffalse
+Using that \( \err_0(w) = (\vec{A}-w\vec{I})^{-1} \vec{v} \), we can rewrite \cref{thm:disk} as
+\begin{equation*}
+    \frac{ \| \fA \vec b - \lan_k(f) \|_2}{\| \fA\vec b \|_2} \le \max_{z \in \Gamma} |f(z)| \cdot  \frac{(\lmax- w) \|(\vec{A} - w\vec{I})^{-1} \vec b \|_2}{\| \fA\vec b \|_2} \cdot \frac{\|\err_k(w)\|_2}{\| \err_0(w) \|_2}. 
+\end{equation*}
+This can be used to obtain simple relative error bounds for many functions. 
+For instance, suppose $\vec{A}$ is positive definite,  $f(x) = x^{-q}$ for \( q > 1 \), and $w = c \lambda_{\text{min}}$ for $c\in (0,1)$.
+Then $\max_{z\in\Gamma} |z^{-q}| = w^{-q} = c^{-q} \lmin^{-q}$, \( \| (\vec{A} - w\vec{I})^{-1} \vec{v} \|_2 \leq (\lmin-w)^{-1} \| \vec{v} \| \) and \( \| \vec{A}^{-q} \vec{v} \|_2 \geq \lmax^{-q} \| \vec{v} \| \).
+We then have the bound\footnote{Slightly stronger bounds can be obtained by bounding \( \| (\vec{A}-w\vec{I})^{-1} \vec{v} \|_2 / \| \vec{A}^{-q} \vec{v} \|_2 \) directly, rather than bounding the numerator and denominator separately.} 
+\begin{equation*}
+    \frac{ \| \vec{A}^{-q} \vec b - \lan_k(f) \|_2}{\| \vec{A}^{-q}\vec b \|_2} 
+    %&\le \max_{z \in \Gamma} |z^{-q}| \cdot  \frac{(\lmax- w) \cdot \|(\vec{A} - w\vec{I})^{-1} \vec b \|_2}{\| \vec{A}^{-q} \vec b \|_2} \cdot \frac{\|\err_k(w)\|_2}{\| \err_0(w) \|_2} 
+    \leq 
+    c^{-q} \kappa(\vec{A})^{q} \kappa( \vec{A} - w\vec{I})  \frac{\|\err_k(w)\|_2}{\| \err_0(w) \|_2} .
+\end{equation*}
+\fi
+
+
+\Cref{thm:disk} provides simple reductions to the error of solving a positive definite linear system involving \( \vec{A} - w\vec{I} \) using Lanczos. 
+However, these bounds may be a significant overestimate in practice.
+In particular, for any \( k>1 \), \cref{eqn:dkwz_qwz} cannot be sharp due to the fact that \( \|h_{w,z}\|_{\mathcal{I}} = \sup_{x \in \mathcal{I}} |h_{w,z}(x)| \) cannot be attained at every eigenvalue of \( \vec{T} \).
+In fact, for most values \( \lambda_i ( \vec{T} ) \) and most points \( z \in \Gamma \), we expect \( | h_{w,z}( \lambda_i ( \vec{T} ) ) | \ll \|h_{w,z}\|_{\mathcal{I}} \).
+\Cref{fig:ch7_hwz} shows sample level curves for \( \|h_{w,z}\|_{\mathcal{I}} / |\det(h_{w,z}(\vec{T}))|^{1/k} \) which illustrate  the slackness in the bound.
+
+
+To derive sharper a priori bounds, there are several approaches. 
+
+First, if more information is known about the eigenvalue distribution of \( \vec{A} \), then the \( S_i \) can be chosen based on this information.
+For example, it is possible to exploit the interlacing property of the eigenvalues of \( \vec{T} \).
+\begin{example}
+Suppose \( \vec{A} \) has eigenvalues in \( [0,1] \) with a single eigenvalue at \( \kappa > 1 \).  Assume \( w \leq 0 \).
+Then there is at most one eigenvalue of \( \vec{T} \) in \( [1,\kappa] \) so in \cref{thm:err_int} we can pick $S_i = [0,1]$ for $i = 0,\ldots, k-2$ and $S_{k-1} = [0,\kappa]$. We have
+\begin{equation*}
+    |\!\det(h_{w,z}(\vec{T}))| = \left| \prod_{i=0}^{k-1} h_{w,z}(\lambda_i(\vec{T})) \right| \leq
+      \left(\| h_{w,z} \|_{[0,1]}\right)^{k-1} \|h_{w,z}\|_{[0,\kappa]}.
+\end{equation*}
+If \( z \) is near to \( \kappa \) then \( \| h_{w,z} \|_{[0,1]} \) may be much smaller than \( \| h_{w,z} \|_{[0,\kappa]} \).
+\end{example}
+
+\begin{figure}
+    \begin{center}
+        \includegraphics{imgs/ch7_hwz1.pdf} 
+        \includegraphics{imgs/ch7_hwz2.pdf} 
+    \end{center}
+     \caption[{Contour plot of \( \|h_{w,z}\|_{\mathcal{I}} / |\!\det(h_{w,z}(\vec{T}))|^{1/k} \) as a function of $z \in \mathbb{C}$}]{%
+         Contour plot of \( \|h_{w,z}\|_{\mathcal{I}} / |\!\det(h_{w,z}(\vec{T}))|^{1/k} \) as a function of $z \in \mathbb{C}$ for a synthetic example with \( w=0 \) (top) and \( w=1 \) (bottom), \( \mathcal{I} = [0.5,3] \), and \( \Lambda(\vec{T}) = \{ 0.5,0.8,1.2,1.5,3 \} \) ($k=5$).
+    Larger slackness in \cref{eqn:dkwz_qwz} corresponds to darker regions. 
+    \hspace{.25em}\emph{Legend}:
+    Here \( w \) is indicated by the white diamond 
+    ({\protect\raisebox{0mm}{\protect\includegraphics[]{imgs/legend/mD.pdf}}}). 
+    and the eigenvalues of \( \vec{T} \) are indicated by white x'is 
+    ({\protect\raisebox{0mm}{\protect\includegraphics[]{imgs/legend/mX.pdf}}}). 
+    \hspace{.25em}\emph{Takeaway}: Slackness exchibits structure; in particular, it is lower far from \( \Lambda \). 
+    }
+    \label{fig:ch7_hwz}
+\end{figure}
+
+
+Second, the contour \( \Gamma \) can be chosen to try to reduce the slackness in \cref{eqn:dkwz_qwz}.
+Intuitively, the slackness is exacerbated when \( z \in \Gamma \) is close to \( S_i \) but far from \( \lambda_i(\vec{T}) \).
+For instance, for any \( k>1 \),
+\begin{equation*}
+\lim_{|z|\to\infty} \frac{\|h_{w,z}\|_{\mathcal{I}}^k}{|\det(h_{w,z}(\vec{T}))|} \to 1 
+,\qquad\text{and }\qquad
+\forall \lambda \in \mathcal{I},~ \lim_{z\to\lambda} \frac{\|h_{w,z}\|_{\mathcal{I}}^k}{|\!\det(h_{w,z}(\vec{T}))|} \to \infty.
+\end{equation*}
+This behavior is also observed in \cref{fig:ch7_hwz}.
+
+These observations suggest that we should pick \( \Gamma \) to be far from the spectrum of \( \vec{A} \).
+Of course, we are constrained by properties of \( f \) such as branch cuts and singularities.
+Moreover, certain contours may increase the slackness in \cref{thm:err_int} itself. 
+These considerations are discussed further in \cref{ex:sqrt_contours}.
+
+
+\subsection{A posteriori error bounds}
+
+After the Lanczos factorization \cref{eqn:lanczos_three_term} has been computed, \( \vec{T} \) is known and \( \Lambda(\vec{T}) \) can be cheaply computed. 
+Thus, in \cref{thm:err_int} we can take \( S_i = \{ \lambda_i(\vec{T}) \} \) for \( i =0,\ldots,k-1 \), which is the best possible choice. 
+In this case \cref{eqn:dkwz_qwz} is an equality and \( \det(h_{w,z}(\vec{T})) = \det(\vec{T}-w)/\det(\vec{T}-z) \) can be computed via tridiagonal determinant formulas rather than using the eigenvalues of \( \vec{T} \).
+
+If \( \mathcal{I} \) is not known, the extreme Ritz values \( \lambda_{\text{min}}(\vec{T}) \) and \( \lambda_{\text{max}}(\vec{T}) \) can be used to estimate the extreme eigenvalues of \( \vec{A} \) \cite{kuczyski_wozniakowski_92,parlett_simon_stringer_82}.
+All together, this means that it is not difficult to efficiently obtain accurate estimates of the bound from \cref{thm:err_int}.
+
+
+
+
+\subsection{Numerical computation of integrals}
+\label{sec:numerical_integral}
+Typically, to produce an a priori or a posteriori error bound, the integral term in \cref{thm:err_int} must be computed numerically.
+Consider a discretization of the integral
+\begin{equation*}
+    \fA = -\frac{1}{2\pi \ii} \oint_{\Gamma} f(z) (\vec{A}-z\vec{I})^{-1} \d{z}
+\end{equation*}
+using nodes \( z_i \) and weights \( w_i \), \( i=0,1,\ldots,q-1 \). 
+This yields a rational matrix function
+\begin{equation*}
+    r_q(\vec{A}) := -\frac{1}{2\pi \ii} \sum_{i=0}^{q-1}  w_i f(z_i) (\vec{A}-z_i\vec{I})^{-1}. 
+\end{equation*}
+Using the triangle inequality, we can write
+\begin{align}
+\hspace{1em}&\hspace{-1em}\nonumber
+\| \fA \vec{v} - \lan_k(f) \|
+\\&\leq 
+\nonumber
+\| \fA \vec{v} - r_q(\vec{A}) \vec{v} \| + \| r_q(\vec{A}) \vec{v} - \lan_k(r_q)) \| + \| \lan_k(r_q) - \lan_k(f) \|
+\\&\leq 2  \left( \max_{x \in \Lambda \cup \Lambda(\vec{T})} | f(x) - r_q(x) | \right) \|\vec{v}\|  + \| r_q(\vec{A}) \vec{v} - \lan_k(r_q) \|. \label{eqn:triangle_ineq_rational}
+%\nonumber
+%\\& \leq \underbrace{2 \|\vec{v}\| \left( \max_{x \in \mathcal{I}} | f(x) - r(x) | \right)}_{\text{approximation error}} 
+%    + \underbrace{\vphantom{ \bigg| } \| r(\vec{A}) \vec{v} - \lan_k(r) \|}_{\text{application error}}.
+%    \label{eqn:triangle_ineq}
+\end{align}
+Now, observe that analogous to \cref{thm:err_int},
+\begin{align}
+    \label{eqn:err_int_rational}
+    \hspace{3em}&\hspace{-3em}\nonumber
+    \| r_q(\vec{A})\vec{v} - \lan_k(r_q) \| 
+    \\&\leq \left( \frac{1}{2\pi} \sum_{i=0}^{q-1} w_i \, |f(z_i)|  \left( \prod_{i=0}^{k-1} \|h_{w,z}\|_{S_i} \right)  \|h_{w,z}\|_{S_0} \right) \| \err_k(w) \|.
+\end{align}
+If we use the same nodes and weights to evaluate the integral term in \cref{thm:err_int}, we obtain exactly the expression on the right hand side of \cref{eqn:err_int_rational}.
+Thus, this discretization of \cref{thm:err_int} is a true upper bound for the Lanczos-FA error to within an additive error of size equal to twice the approximation error of \( r(x) \) to \( f(x) \) on \( \Lambda \cup \Lambda(\vec{T}) \) times \( \| \vec{v} \| \).
+In many cases, we expect exponential convergence of \( r_q \) to \( f \), which implies that this term can be made less than any desired value $\epsilon > 0$ using a number of quadrature nodes that grows only as the logarithm of \( \epsilon^{-1} \) \cite{hale_higham_trefethen_08,trefethen_weideman_14}.
+
+We note that fast convergence of \( r_q \) to \( f \) suggests that, instead of applying Lanczos-FA, we can approximate \( \fA \vec{v} \) by first finding \( r_q \) and then solving a small number of linear systems \( (\vec{A} - z_i \vec{I}) \vec{x}_i = \vec{v} \) to compute \( r_q(\vec{A})\vec{v} \).
+Solving these systems with any fast linear system solver yields an algorithm for approximating \( \fA\vec{v} \) inheriting, up to logarithmic factors in the error tolerance, the same convergence guarantees as the linear system solvers used.
+A recent example of this approach is found in \cite{jin_sidford_19} which uses a modified version of stochastic variance reduced gradient (SVRG) to obtain a nearly input sparsity time algorithm for \( \fA\vec{v} \) when \( f \) corresponds to principal component projection or regression.
+
+A range of work suggests using a Krylov subspace method and the shift invariance of the Krylov subspace to solve these systems and compute $r_q(\vec A)\vec b$ explicitly.
+This was studied in \cite{frommer_kahl_lippert_rittich_13,frommer_simoncini_09} for the Lanczos method, and in \cite{pleiss_jankowiak_eriksson_damle_gardner_20} for MINRES, the latter of which uses the results of \cite{hale_higham_trefethen_08} to determine the quadrature nodes and weights. 
+However, as the above argument demonstrates, the limit of the Lanczos-based approximation as the discretization becomes finer is simply the Lanczos-FA approximation to \( \fA \vec{v} \).
+Therefore, there is no clear advantage to such an approach over Lanczos-FA in terms of the convergence properties, unless preconditioning is used.
+.
+
+On the other hand, there are some advantages to these approaches in terms of computation.
+Indeed, Krylov solvers for symmetric/Hermitian linear systems require just $O(n)$ storage; i.e. they do not require more storage as more iterations are taken. 
+A naive implementation of Lanczos-FA requires $O(kn)$ storage, and while Lanczos-FA can be implemented to use \( O(n) \) storage by taking two passes, this has the effect of doubling the number of matrix-vector products required.
+See \cite{guttel_schweitzer_21} for a recent overview of limited-memory Krylov subspace methods.
+
+
+\section{Examples and numerical verification}
+\label{sec:cif_examples}
+
+We next present examples in which we apply  \cref{thm:err_int} to give a posteriori and a priori error bounds for approximating common matrix functions with Lanczos-FA. These examples illustrate the general approaches to applying \cref{thm:err_int} described in \cref{sec:cif_results}. 
+All integrals are computed either analytically or using SciPy's \texttt{integrate.quad} which is a wrapper for QUADPACK routines. 
+
+In all cases, we exactly compute the $\| \err_k(w) \|$ term in the bounds. 
+In practice, one would bound this quantity a priori or a posteriori using existing results on bounding the Lanczos error for linear system solves.
+By computing the error exactly, we separate any looseness due to our bounds from any looseness due to an applied bound on  $\| \err_k(w) \|$. 
+
+
+
+\subsection{Choice of contour}
+\label{ex:sqrt_contours}
+Let \( \vec{A} \) be positive definite and  \( f(x) = \sqrt{x} \).
+Perhaps the simplest bound is obtained by using \cref{thm:err_int} with $w = 0$, \( S_i = \mathcal{I} \) and \( \Gamma \) chosen as the boundary of the disk \( \mathcal{D}(\lmax, \lmax ) \).%or as the \( \|h_{w,z}\|_{\mathcal{I}} = 1 \) level curve of \( \|h_{w,z}\|_{\mathcal{I}} \).
+We then obtain a bound via \cref{thm:disk}. 
+However, this bound may be loose -- note that except through $\|\err_k(w)\|$, it does not depend on the number of iterations $k$.  Thus it cannot establish convergence at a rate faster than that of solving a linear system with coefficient matrix \( \vec{A} \).
+
+
+\begin{figure}[h]
+\centering
+\begin{subfigure}{.25\textwidth}\centering
+\includegraphics[scale=.7]{imgs/ch7_circle_contour.pdf}
+\caption{circle contour}
+\label{fig:circle}
+\end{subfigure}
+\hfill
+\begin{subfigure}{.25\textwidth}\centering
+\includegraphics[scale=.7]{imgs/ch7_pacman_contour.pdf}
+\caption{Pac-Man contour}
+\label{fig:pacman}
+\end{subfigure}
+\hfill
+\begin{subfigure}{.35\textwidth}\centering
+\includegraphics[scale=.7]{imgs/ch7_double_circle_contour.pdf}
+\caption{double circle contour}
+\label{fig:double_circle}
+\end{subfigure}
+\caption[Circle, Pac-Man and double circle contours]{%
+Circle, Pac-Man and double circle contours described in \cref{ex:sqrt_contours,ex:cif_pw} respectively.
+    All three figures show \( \mathcal{I} \) 
+    ({\protect\raisebox{0mm}{\protect\includegraphics{imgs/legend/spec.pdf}}})
+    and \( w \) 
+    ({\protect\raisebox{0mm}{\protect\includegraphics{imgs/legend/mD.pdf}}}).
+}
+\label{fig:contours}
+\end{figure}
+
+Keeping $w = 0$, we can obtain tighter bounds by letting $\Gamma$ be a ``Pac-Man'' like contour that consists of a large circle about the origin of radius \( R \) with a small circular cutout of radius \( r \) that excludes the origin and a small strip cutout to exclude the negative real axis. %, as pictured in \cref{fig:Pac-man}.
+    That is, as shown in \cref{fig:pacman}, the boundary of the set,
+\begin{equation*}
+    \mathcal{D}(0,R) \setminus ( \{ z : \Re(z) \leq 0, |\Im(z)| < r \} \cup \mathcal{D}(0,r) ).
+\end{equation*}
+
+As the outer radius \( R \rightarrow \infty \), the integral over the large circular arc goes to \( 0 \) since \( \|h_{w,z}\|_{\mathcal{I}} = O(R^{-1}) \), \( | f(z) | = O(R^{1/2}) \), and the length of the circular arc is on the order of \( R \). 
+Thus, the product \( f(z) (\| h_{w,z} \|_{\mathcal{I}})^{k+1} \) goes to \( 0 \) as \( R \rightarrow \infty \), for all \( k \geq 1 \).  
+Similarly, as \( r\to 0 \), the length of the small arc goes to zero.
+Therefore, we need only consider the contributions to the integral on \( [ -R \pm ir, \pm ir] \) in the limit \( R\to \infty, r\to 0 \).
+
+
+In this case, when $S_i = \mathcal{I}$ for all $i$, we can  compute the value of the integral term in \cref{thm:err_int} analytically. We have
+\begin{align*}
+\| f( \vec{A} ) \vec{v} - \lan_k (f) \| 
+&\leq \left(\frac{1}{2 \pi} \int_{-\infty}^0 | (x \pm 0 i)^{1/2} | \:  \| h_{w,x \pm 0 i} \|_{\mathcal{I}}^{k+1} \,\d{x}  \right) \| \err_k \| 
+\\&= \left(\frac{1}{2 \pi} \int_{-\infty}^0 | x \pm 0 i|^{1/2}\frac{ \lambda_{\text{max}} ( \vec{A})^{k+1}}{( \lambda_{\text{max}} ( \vec{A} ) - x )^{k+1}}\,\d{x}   \right) \| \err_k \| 
+\\&= \left(\frac{1}{\pi} \lambda_{\text{max}} ( \vec{A} )^{k+1}  \int_0^{\infty} \frac{y^{1/2}}{( \lambda_{\text{max}} ( \vec{A} ) + y )^{k+1}}\d{y} \right) \| \err_k \| 
+\\&= \left( \frac{\lmax^{3/2}}{2\sqrt{\pi}} \frac{\Gamma(k-1/2)}{\Gamma(k+1)}  \right) \| \err_k \|,
+%\frac{1}{2 \pi} \int_{-R}^0 | (x \pm ir )^{1/2} |\cdot|\! \det ( h_{w,x \pm ir} (\vec{T})) |\cdot\| h_{w,x \pm ir} ( \vec{A} ) \|\,\d{x} 
+%\frac{1}{2 \pi} \int_{-R}^0 | (x \pm ir )^{1/2} |\cdot|\! \det ( h_{w,x \pm ir} (\vec{T})) |\cdot\| h_{w,x \pm ir} ( \vec{A} ) \|\,\d{x} 
+\end{align*}
+where we have made the change of variable \( y = -x \). 
+Note that
+\begin{equation*}
+    \lim_{k \to \infty }k^{3/2}  \frac{\Gamma(k-1/2)}{\Gamma(k+1)} = 1.
+\end{equation*}
+This proves that \( \lan_k ( \sqrt{\cdot}) \) converges somewhat faster than the Lanczos algorithm applied to the corresponding linear system \( \vec{A} \vec{x} = \vec{v} \).
+
+
+\begin{figure}[htb]
+    \begin{center}
+        \includegraphics{imgs/ch7_sqrt_Anorm.pdf} 
+    \end{center}
+    \caption[{\( \vec{A} \)-norm error bounds for \( f(x) = \sqrt{x} \) where \( \vec{A} \) has \( n=1000 \) eigenvalues spaced uniformly in \( [10^{-2},10^2] \) and \( \Gamma \) is a circular contour (left) or Pac-Man contour (right).}]{%
+    \( \vec{A} \)-norm error bounds for \( f(x) = \sqrt{x} \) where \( \vec{A} \) has \( n=1000 \) eigenvalues spaced uniformly in \( [10^{-2},10^2] \) and \( \Gamma \) is a circular contour (left) or Pac-Man contour (right).
+    \hspace{.25em}\emph{Legend}:
+    Lanczos-FA error 
+    ({\protect\raisebox{0mm}{\protect\includegraphics[]{imgs/legend/l1.pdf}}}), a priori bounds obtained by using \cref{thm:err_int} with \( S = S_i = \mathcal{I}  \)
+    ({\protect\raisebox{0mm}{\protect\includegraphics[]{imgs/legend/l4.pdf}}}) 
+    and \( S = S_i = \tilde{\mathcal{I}}(\vec{A}) = [ \lmin/2, 2 \lmax] \)
+    ({\protect\raisebox{0mm}{\protect\includegraphics[]{imgs/legend/l3.pdf}}}), 
+    a posteriori bounds obtained by using \cref{thm:err_int} with \( S = \tilde{\mathcal{I}} \)
+    ({\protect\raisebox{0mm}{\protect\includegraphics[]{imgs/legend/l2.pdf}}}).
+    \hspace{.25em}\emph{Takeaway}: The a posteriori bounds tend to be quite accurate. The choice of contour impacts the quality of the bounds, particuarly the a priori bounds.
+    }
+    \label{fig:ch7_sqrt_Anorm}
+\end{figure}
+
+
+In \cref{fig:ch7_sqrt_Anorm} we plot the bounds from \cref{thm:err_int} for the circular and Pac-Man contours described above.
+For both contours we consider \( S_i = \mathcal{I} \) for all \( i \), as well as bounds based on an overestimate of this interval,  \( S_i = \tilde{\mathcal{I}}(\vec{A}) \) where 
+\(
+    \tilde{\mathcal{I}}(\vec{A}) = [ \lmin/2, 2 \lmax].
+\)
+This provides some sense of how sensitive the bounds are to the choice of \( S_i \) when $S_i$ is a single interval. 
+For a posteriori bounds, we set \( S_i \) to $\{\lambda_i(\vec T_k)\}$ for \( i > 0 \).
+
+We remark that the bounds from \cref{thm:err_int} are upper bounds for \cref{eqn:integral_error} which implies that the slackness of \cref{eqn:integral_error} is relatively small.
+This suggests that the roughly 2 orders of magnitude improvement in \cref{thm:err_int} when moving from the circular contour to the Pac-Man contour is primarily due to reducing the slackness in \cref{eqn:dkwz_qwz}, aligning with our intuition.
+
+\subsection{Piecewise analytic functions}
+\label{ex:cif_pw}
+
+We now discuss the application of \cref{thm:err_int} to piecewise analytic functions.
+Functions of this class have found widespread use throughout scientific computing and data science but have proven particularly difficult to analyze using existing approaches \cite{dinapoli_polizzi_saad_16,frostig_musco_musco_sidford_16,jin_sidford_19,eshof_frommer_lippert_schilling_van_der_vorst_02}.
+
+Let \( f(x) \) be one of \( |x-a| \), \( \operatorname{step}(x-a) \), or \( \operatorname{step}(x-a)/x \) for \( a \in \mathcal{I} \), where, for \( z \in \mathbb{C} \) we define $\operatorname{step}(z) := 0$ for $\text{Re}(z) < 0$ and $\operatorname{step}(z) := 1$ for $\text{Re}(z) \ge 0$.
+Note that the latter two functions correspond to principle component projection and principle component regression respectively.
+In the case of principle component regression, we assume $\vec{A}$ is positive semi-definite.
+The step function is also closely related to the sign function, which is widely used in quantum chromodynamics to compute the overlap operator \cite{eshof_frommer_lippert_schilling_van_der_vorst_02}.
+
+We take \( w = a \) and define \( \Gamma_1 \) and \( \Gamma_2 \) as the boundaries of the disks 
+\begin{equation*}
+    \mathcal{D}_1 := \mathcal{D} ( \lmin, w - \lmin - \varepsilon) 
+    \quad \text{and}\quad
+    \mathcal{D}_2 := \mathcal{D} ( \lmax , \lmax - w - \varepsilon ),
+\end{equation*}
+for some sufficiently small \( \varepsilon > 0 \). 
+To extend \( |x-a| \) to the complex plane, we replace \( |x-a| \) by \( z-a \) if \( \text{Re}(z) > a \) and by \( a-z \) if \( \text{Re}(z) \leq a \). 
+Then \( f \) is analytic in a neighborhood of the union of these two disks, so assuming none of the eigenvalues of $\vec{A}$ or $\vec{T}$ are equal to $a$, we can apply \cref{thm:level_sets}.
+\begin{table}[htb]
+ \begin{align*}
+\begin{array}{rlll}
+    \toprule
+    f(x) & f(z), z \in \Omega_1 & f(z), z \in \Omega_2 & \frac{1}{2 \pi} \sum_{j=1}^{2} | \Gamma_j | \max_{z\in\Gamma_j} | f(z) | \\\midrule
+    |x-a| & a-z & z-a &  2(a- \lambda_{\text{min}} )^2 + 2(\lambda_{\text{max}}-a)^2  \\
+    \operatorname{step}(x-a) & 0 & 1 &  (\lambda_{\text{max}}-a) \\
+    \operatorname{step}(x-a)/x & 0 & 1/z & (\lambda_{\text{max}}-a)/a\\
+    \bottomrule
+\end{array}
+\end{align*}
+\caption{Values of the factor in parentheses on the right-hand side of \cref{eqn:ex_cif_pw_a_priori2} (ignoring $\varepsilon$) for several common piecewise analytic functions.}
+\label{tab:cif_piecewise}
+\end{table}
+
+
+Note that \( \|h_{w,z}\|_{\mathcal{I}} \to 1 \) as \( z \to w \) from outside \( [a,b] \), avoiding a potential singularity which would occur if the contour $\Gamma$ passed through $\mathcal{I}$ at any other points.
+In fact, ignoring the contribution of $\epsilon$, \( \| h_{w,z} \|_{\mathcal{I}} = 1 \) for all \( z\in \Gamma_1 \) and for all \( z\in\Gamma_2 \).
+Thus, \cref{thm:disk} can be written as
+\begin{equation}
+    \| \fA \vec{v} - \lan_k(f) \|
+%    &\leq \left( \frac{1}{2\pi} \sum_{j=1}^{2} \int_{\Gamma_j} | f(z) | \d{z}| \right) \| \err_k(w) \| \label[ineq]{eqn:ex_cif_pw_a_priori1}
+    \leq \left(\frac{1}{2\pi} \sum_{j=1}^{2}  |\Gamma_j| \max_{z\in\Gamma_j} | f(z) | \right) \| \err_k(w) \| \label{eqn:ex_cif_pw_a_priori2}.
+\end{equation}
+The values of this bound for all three functions are summarized in \cref{tab:cif_piecewise}.
+
+If \( w \in \mathcal{I} \)  we note that \( \| \err_k(w) \| \) corresponds to the indefinite linear system \( (\vec{A} - w \vec{I}) \vec{x} = \vec{v} \), so standard results for the Conjugate Gradient algorithm are not applicable.
+However, the residual of this system can still be computed exactly once the Lanczos factorization \cref{eqn:lanczos_three_term} has been obtained, and as we discuss in \cref{sec:CG_indefinite}, a priori bounds for the convergence of MINRES \cite{cullum_greenbaum_96} can be extended to the Lanczos algorithm for indefinite systems.
+It is also clear that, at the cost of having to compare against the error of multiple different linear systems, functions which are piecewise analytic on more than two regions can be handled.
+
+\begin{figure}[ht]
+    \begin{center}
+        \includegraphics{imgs/ch7_pcr.pdf} 
+    \end{center}
+    \caption[{\( (\vec{A}-w\vec{I})^2 \)-norm error bounds for \( f(x) = \operatorname{step}(x-a)/x \) where \( \vec{A} \) is a random matrix whose limiting density is supported on \( [a_1,b_1]\cup[a_2,b_2] \), $a = (b_1+a_2)/2$, and \( \Gamma \) is a double circle contour.}]{% 
+    \( (\vec{A}-w\vec{I})^2 \)-norm error bounds for \( f(x) = \operatorname{step}(x-a)/x \) where \( \vec{A} \) is a random matrix whose limiting density is supported on \( [a_1,b_1]\cup[a_2,b_2] \), $a = (b_1+a_2)/2$, and \( \Gamma \) is a double circle contour. 
+    \hspace{.25em}\emph{Legend}:
+    Lanczos-FA error 
+    ({\protect\raisebox{0mm}{\protect\includegraphics[]{imgs/legend/l1.pdf}}}), 
+    a priori bounds obtained by using \cref{thm:err_int} with \( S = S_i = [a_1-0.1,b_2+0.1]  \)
+    ({\protect\raisebox{0mm}{\protect\includegraphics[]{imgs/legend/l3.pdf}}}) and \cref{eqn:ex_cif_pw_a_priori2} with the values from \cref{tab:cif_piecewise}
+    ({\protect\raisebox{0mm}{\protect\includegraphics[]{imgs/legend/l4.pdf}}}) 
+    a posteriori bounds obtained by using \cref{thm:err_int} with \( S = [a_1-0.1,b_2+0.1] \)
+    ({\protect\raisebox{0mm}{\protect\includegraphics[]{imgs/legend/l2.pdf}}}). 
+    \hspace{.25em}\emph{Takeaway}: The bounds work well, even for pieceiwise analytic functions.
+    }
+    \label{fig:ch7_pcr}
+\end{figure}
+
+
+In \cref{fig:ch7_pcr}, we plot the bounds from \cref{thm:err_int} for the contour described above for principle component regression with \( f(x) = \operatorname{step}(x-a)/x \).
+Here we use the same model as in \cref{sec:smooth_density}. 
+In particular, we set \( n=2000 \), \( d=0.3 \), and \( \sigma = 8 \) and take
+\begin{equation*}
+    \vec{A} = \frac{1}{m} \vec{\Sigma}^{1/2} \vec{X} \vec{X}^\cT \vec{\Sigma}^{1/2},
+\end{equation*}
+where \( m = n/d \), \( \vec{X} \) is a \( n\times m \) matrix with iid standard normal entries, and \( \vec{\Sigma} \) a diagonal matrix with \( 1/m \) as the first \( n/2 \) entries and \( \sigma/m \) as the last \( n/2 \) entries.
+As discussed in \cref{sec:smooth_density}, in the large \( n \) limit, the spectrum of such matrices is supported on intervals \( [a_1,b_1]\cup[a_2,b_2] \), so we take \( a = (b_1+a_2)/2 \) and \( S = S_i = [a_1-0.1,b_2+0.1]\) for a priori bounds and \( S = [a_1-0.1,b_2+0.1 \) for a posteriori bounds.
+Thus, \( f(x) \) corresponds to solving a linear system involving the eigenmodes of the right cluster of eigenvalues supported on \( [a_2,b_2] \).
+
+
+
+%For reference, we also plot the bound \cref{eqn:ex_cif_pw_a_priori2} which shows that there is not much loss from using \cref{eqn:ex_cif_pw_a_priori2} in place of \cref{thm:err_a_priori}.
+%Again, all integrals are computed using SciPy's \texttt{integrate.quad}.
+
+
+\subsection{Quadratic forms}
+\label{ex:quadform_step}
+
+Let \( f(x) = \operatorname{step}(x-a) \) for  \( a \in \mathcal{I} \), and set $w = a$.
+Similarly to the previous example we use \cref{eqn:err_quad_int} to obtain a bound for the quadratic form error $| \vec{v}^\cT \fA\vec{v} - \vec{v}^\cT \lan_k(f)|$. 
+However, since \( \| h_z \|_{S_i} \) has singularities at each point in \( S_i \), we must have $S_i$ avoid where $\Gamma$ crosses the real axis.
+
+\begin{figure}[ht]
+    \begin{center}
+        \includegraphics{imgs/ch7_step_qf.pdf} 
+    \end{center}
+    \caption[{Quadratic form error bounds for \( f(x) = \operatorname{step}(x-a) \) where \( \vec{A} \) is a random matrix whose limiting density is supported on \( [a_1,b_1]\cup[a_2,b_2] \), $a = (b_1+a_2)/2$, and \( \Gamma \) is a double circle contour.}]{%
+    Quadratic form error bounds for \( f(x) = \operatorname{step}(x-a) \) where \( \vec{A} \) is a random matrix whose limiting density is supported on \( [a_1,b_1]\cup[a_2,b_2] \), $a = (b_1+a_2)/2$, and \( \Gamma \) is a double circle contour. 
+    \hspace{.25em}\emph{Legend}:
+    Lanczos-FA quadratic form error 
+    ({\protect\raisebox{0mm}{\protect\includegraphics[]{imgs/legend/l1.pdf}}}), 
+    squared Lanczos-FA 2-norm ({\protect\raisebox{0mm}{\protect\includegraphics[]{imgs/legend/l4.pdf}}}),
+    a priori bounds obtained by using \cref{thm:err_int} with \( S = S_i = [a_1-0.1,b_1+0.1]\cup[a_2-0.1,b_2+0.1]  \)
+    ({\protect\raisebox{0mm}{\protect\includegraphics[]{imgs/legend/l3.pdf}}})
+    a posteriori bounds obtained by using \cref{thm:err_int} with \( S = [a_1-0.1,b_1+0.1]\cup[a_2-0.1,b_2+0.1] \)
+    ({\protect\raisebox{0mm}{\protect\includegraphics[]{imgs/legend/l2.pdf}}}). 
+    \hspace{.25em}\emph{Legend}: The bounds are applicable to quadratic forms.
+    }
+    \label{fig:ch7_pcr_qf}
+\end{figure}
+
+
+
+Suppose \( \lambda_{\text{max}}^{\text{l},w}(\vec{A}) \) and \( \lambda_{\text{min}}^{\text{r},w}(\vec{A}) \) are consecutive eigenvalues of \( \vec{A} \) so that  \( \lambda_{\text{max}}^{\text{l},w}(\vec{A}) < w < \lambda_{\text{min}}^{\text{r},w}(\vec{A}) \).
+Then we can define
+\begin{equation*}
+\mathcal{I}_w(\vec{A}) := [ \lmin , \lambda_{\text{max}}^{\text{l},w}(\vec{A}) ] \cup [ \lambda_{\text{min}}^{\text{r},w}(\vec{A}) , \lmax ].
+\end{equation*}
+In this case, \( \|h_{z}\|_{\mathcal{I}_w(\vec{A})} = \max\{ \|h_{z}\|_{ [\lambda_{\text{min}},\lambda_{\text{max}}^{\text{l},w} ] }, \|h_{z}\|_{ [\lambda_{\text{min}}^{\text{r},w},\lambda_{\text{max}} ] }) \} \) can be computed using \cref{thm:Qz}. 
+We can then apply \cref{eqn:err_quad_int} to obtain a bound for the quadratic form error $| \vec{v}^\cT \fA\vec{v} - \vec{v}^\cT \lan_k(f)|$.
+A priori bounds are obtained with $S_0, S_i = \mathcal{I}_w(\vec A)$ while a posteriori bounds are obtained with $S = \mathcal{I}_w(\vec A)$ and $S_i = \{ \lambda_i(\vec{T}) \}$.
+
+In \cref{fig:ch7_pcr_qf} we use the same matrix as in \cref{ex:cif_pw}.
+This time, however, we use \( S = S_i = [a_1-0.1,b_1+0.1]\cup[a_2-0.1,b_2+0.1]  \) for a priori bounds and \( S = [a_1-0.1,b_1+0.1]\cup[a_2-0.1,b_2+0.1]  \) for a posteriori bounds.
+Note that the squared error \( \| \fA\vec{v} - \lan_k(f) \|^2 \) is close to that of the quadratic form error \( | \vec{v}^\cT \fA\vec{v} - \int f \,\d\qq[g]{\Psi}{2k-1} | \).
+
+\section{Error bounds for Lanczos-FA on indefinite systems}
+\label{sec:CG_indefinite}
+
+In this section, we review several results which rigorously justify the claim that, for any choice of \( w \) with \( \vec{A} - w\vec{I} \) invertible, \( \|\err_k(w)\| \) satisfies a spectrum-dependent error bound.
+
+
+Note that on indefinite problems, the standard implementation of CG (or the LDL version on which Lanczos-OR is based) may fail in such situations since \( \vec{T} \) can be singular in which case the inversion will break down.
+As a result, in such situations, it is standard practice to use MINRES or other related algorithms.
+On the other hand, the Lanczos algorithm does not break down if \( \vec{T} \) is singular, and so the Lanczos-FA approximation to \( \vec{A}^{-1} \vec{v} \) can be computed whenever \( \vec{T} \) is non-singular, even if it was singular at earlier iterations. 
+Interestingly, however, the ``overall'' convergence of the algorithm tends to be comparable to MINRES in the sense that at many iterations the error is quite similar.
+
+
+The first result we remark on was first proved in \cite{cullum_greenbaum_96} compares the residual norms of Lanczos-FA and MINRES.
+\begin{theorem}
+    %\cite[Ex. 5.1]{greenbaum_97}
+\label{thm:minres_CG_residuals1}
+Let \( \vec{A} \) be a nonsingular Hermitian matrix and define \( \vec{r}_k^M \) as the MINRES residual at step $k$; i.e. 
+\begin{equation*}
+    \vec{r}_k^M := \vec{v} - \vec{A} \hat{\vec{y}}
+    ,\qquad
+    \hat{\vec{y}} = \argmin_{\vec{y}\in\mathcal{K}_k} \| \vec{v} - \vec{A} \vec{y} \|_2 .
+\end{equation*}
+Then, assuming that the initial residuals in the two procedures are the same,
+\begin{equation*}
+    \frac{\| \Res_k  \|_2}{\|\Res_0\|_2} 
+    = \frac{\| \vec{r}_{k}^M \|_2/\| \vec{r}_{0}^M\|_{2}}{\sqrt{1- \left( \| \vec{r}_{k}^M \|_2 / \| \vec{r}_{k-1}^M \|_2 \right)^2}}.
+\end{equation*}
+\end{theorem}
+
+Therefore, we see that if MINRES makes good progress at step \( k \) (i.e. \( \| \vec{r}_k^M \|_2 / \| \vec{r}_{k-1}^M \|_2 \) is small), then \cref{thm:minres_CG_residuals1} implies \( \| \Res_k \|_2/\|\Res_0\|_2 \approx \| \vec{r}_k^M \|_2/\|\vec{r}_0^M\|_2 \).
+%Loosely, we therefore expect that Lanczos-FA to converge similarly to MINRES in the sense that
+Thus, since MINRES converges at a linear rate,
+there must be iterations where the MINRES residual norm decreases enough that the Lanczos-FA residual norm is similarly small.
+This is made precise in \cite[Corollary A.2]{chen_greenbaum_musco_musco_22a} which demonstrates the iteration complexity of Lanczos-FA on indefinite systems is nearly the same as that of MINRES.
+
+\iffalse
+\begin{corollary}
+\label{thm:indefinite_CG}
+Suppose $\Lambda\subset [a,b]\cup[c,d]$, where $a < b < 0 < c < d$ with $b-a = d-c$, and define $\gamma = \sqrt{|ad|/|bc|}$.
+Then, for any $\epsilon < \gamma/4$ there exsits \( k \leq 2 \gamma \log(\sqrt{2} \gamma/\epsilon) \) so that \( \| \Res_k \|_2 / \| \Res_0 \|_2 < \epsilon \).
+\end{corollary}
+
+While the proof is not difficult, we do not include it as the corollary only improves the bound from ... by a constant factor.
+\fi
+
+In fact, stronger results are known. 
+In particular, it is known that Lanczos-FA process iterates whose residuals satisfy a minimax bound on the eigenvalues of \( \vec{A} \), at least at every other iteration \cite{greenbaum_druskin_knizhnerman_99}.
+While not well known, the argument proving this claim is amazingly simple, so we provide proofs for the exact arithmetic case.
+These results hold to close approximation in finite precision arithmetic; see \cite{greenbaum_druskin_knizhnerman_99} for the statements and proofs in this setting. 
+
+We begin with several lemmas. 
+\begin{lemma}
+    \label[lemma]{thm:TkTk1_rvbd}
+    Suppose \( \theta \) is an eigenvalue of \(\,\vec{T}\) with eigenvector \( \vec{s} \)  and \( \mu \) is an eigenvalue of \( \,[\vec{T}]_{:k-1,:k-1} \) with eigenvector \( \vec{v} \).
+Then,
+\begin{equation*}
+    \theta - \mu = \frac{\beta_{k-2}[\vec{s}]_{k-1}[\vec{v}]_{k-2}}{\vec{s}^\cT \hat{\vec{v}}}
+\end{equation*}
+    where \( \hat{\vec{v}} \) is \( \vec{v} \) with a zero appended at the bottom.
+\end{lemma}
+
+\begin{proof}
+Observe that
+\begin{equation*}
+    \theta \vec{s}^\cT \hat{\vec{v}} 
+    = \vec{s}^\cT \vec{T} \hat{\vec{v}} 
+    = \vec{s}^\cT ( \mu \hat{\vec{v}} + \beta_{k-2}[\vec{v}]_{k-2} \vec{e}_{k-1} )
+    = \mu \vec{s}^\cT \hat{\vec{v}} + \beta_{k-2} [\vec{s}]_{k-1}[\vec{v}]_{k-2}.
+\end{equation*}
+The result follows by rearranging the above expression.
+\end{proof}
+
+\begin{lemma}
+    \label[lemma]{thm:rv_bound}
+Suppose \( \theta \) is an eigenvalue of \( \,\vec{T} \) with eigenvector \( \vec{s} \). 
+    Then
+\begin{equation*}
+    \min_{0\leq i<n} |\theta - \lambda_i| \leq | \beta_{k-1} [\vec{s}]_{k-1}|.
+\end{equation*}
+\end{lemma}
+
+\begin{proof}
+Using the Lanczos recurrence \cref{eqn:lanczos_three_term} and the eigendecomposition \( \vec{A} = \vec{U} \vec{\Lambda}\vec{U}^\cT \)  we find,
+\begin{equation*}
+    \beta_{k-1} \vec{q}_{k} \vec{e}_{k-1}^\cT \vec{s} = \vec{A}\vec{Q}\vec{s} - \vec{Q}\vec{T}\vec{s}
+    = \vec{A} \vec{Q}\vec{s} - \theta \vec{Q}\vec{s}
+    = \vec{U}(\vec{\Lambda} - \theta \vec{I}) \vec{U}^\cT \vec{Q} \vec{s}.
+\end{equation*}
+%
+Rearranging and taking norms on both sides we then have
+\begin{equation*}
+    1 = \| \vec{Q}\vec{s} \| 
+    = \| \beta_{k-1} \vec{U}(\Lambda - \theta \vec{I})^{-1} \vec{q}_{k} \vec{e}_{k-1}^\cT \vec{s} \|_2
+    \leq |\beta_{k-1} [\vec{s}]_{k-1}| \| (\vec{\Lambda} - \theta \vec{I})^{-1} \|_2 
+\end{equation*}
+where we have used that \( \|\vec{U}\|_2 = 1 \) and \( \|\vec{Q}\vec{s}\|_2 = 1 \).
+The result then follows from the fact that
+\begin{equation*}
+   \|(\vec{\Lambda} - \theta \vec{I})^{-1}\|_2^{-1}
+    = \big(\max_{0\leq i<n} |\lambda_i - \theta|^{-1} \big)^{-1}
+    = \min_{0\leq i<n} |\lambda_i - \theta|.
+    \qedhere
+\end{equation*}
+\end{proof}
+
+The first main result of \cite{greenbaum_druskin_knizhnerman_99} asserts that eigenvalues of \( \vec{T} \) are bounded away from zero at least at every other iteration, provided \( \vec{A} \) is not singular. 
+\begin{theorem}
+\label{thm:Tk_invertible_bd}
+Suppose \( \theta \) is an eigenvalue of \(\,\vec{T}\) and \( \mu \) is an eigenvalue of \( \,[\vec{T}]_{:k-1,:k-1} \).
+Then
+\begin{equation*}
+    \frac{\max\{|\theta|,|\mu|\}}{\|\vec{A}\|} \geq \frac{\kappa^2}{2+\sqrt{3}}.
+\end{equation*}
+\end{theorem}
+
+\begin{proof}
+Applying \cref{thm:rv_bound} to $\vec{T}$ and $[\vec{T}]_{:k-1,:k-1}$ and then using \cref{thm:TkTk1_rvbd} and the fact that $\|\vec{s}\|_2 = \|\vec{v}\|_2 = 1$ we have
+\begin{equation*}
+    |\theta||\mu| \leq \beta_{k-2}\beta_{k-1} [\vec{s}]_{k-1} [\vec{v}]_{k-2}
+    = \beta_{k-1} |\theta - \mu| \vec{s}^\cT \hat{\vec{v}}
+    \leq \beta_{k-1} |\theta - \mu|.
+\end{equation*}
+
+Let $\tau := \max\{|\theta|,|\mu|\}$. 
+Then $|\theta-\mu|\leq 2\tau$, $|\theta| \geq \sigma_{\textup{min}}-\tau$,  and $|\mu| \geq \sigma_{\textup{min}}-\tau$.
+This implies that
+\begin{equation*}
+    (\sigma_{\textup{min}} - \tau)^2
+    \leq |\theta||\mu|
+    \leq \beta_{k-1} | \theta - \mu |
+    \leq 2 \beta_{k-1} \tau.
+\end{equation*}
+Solving for $\tau$ we find
+\begin{equation*}
+    \tau \geq \frac{\sigma_{\textup{min}}^2}{\sigma_{\textup{min}} + \beta_{k-1} + \sqrt{\beta_{k-1}^2 + 2\beta_{k-1} \sigma_{\textup{min}}}}
+    \geq \frac{\kappa}{2+\sqrt{3}}
+\end{equation*}
+where, in the final inequality, we have use the fact that both $\beta_{k-1} $ and $\sigma_{\textup{min}}$ are bounded above by $\| \vec{A} \|_2$.
+\end{proof}
+
+We are nearly ready to show that the Lanczos-FA iterate satisfies a minimax bound on $\Lambda$. 
+First, however, we require the following lemma relating the bottom left entry of \( \vec{T}^{-1} \) to the norm of \( \vec{T}^{-1} \).
+\begin{lemma}
+    \label[lemma]{thm:Tinv_poly}
+\begin{equation*}
+    | \vec{e}_{k-1}^\cT\vec{T}^{-1} \vec{e}_0 |
+    \leq \| \vec{T}^{-1} \|_2 \min_{\deg(p)<k, p(0)=1} \| p(\vec{T}) \vec{e}_1 \|_2.
+\end{equation*}
+\end{lemma}
+
+\begin{proof}
+Write $p = 1-xq$ for some $q$ with $\deg(q)<k-1$. 
+Then $\vec{e}_{k-1}^\cT q(\vec{T}) \vec{e}_0 = 0$ so
+\begin{equation*}
+    \vec{e}_{k-1}^\cT\vec{T}^{-1} \vec{e}_0
+    = \vec{e}_{k-1}^\cT(\vec{T}^{-1}-q(\vec{T})) \vec{e}_0
+    = \vec{e}_{k-1}^\cT\vec{T}^{-1} p(\vec{T}) \vec{e}_0.
+\end{equation*}
+Now, applying a submultiplicative bound, we find
+\begin{equation*}
+    |\vec{e}_{k-1}^\cT\vec{T}^{-1} \vec{e}_0|
+    \leq \| \vec{T}^{-1} \|_2 \| p(\vec{T}) \vec{e}_1 \|_2.
+\end{equation*}
+The result follows by optimizing over $p$.
+\end{proof}
+
+Proving a minimax bound for the Lanczos-FA residual is now straightforward.
+\begin{theorem}
+At least at every other iteration,
+\begin{equation*}
+    \| \res_k \|_2 
+    \leq \frac{\kappa^2}{2+\sqrt{3}}l\min_{\deg(p)<k, p(0)=1} \| p \|_{\Lambda}
+\end{equation*}
+\end{theorem}
+
+\begin{proof}
+From \cref{thm:shifted_lanczos_equivalence} we see have that
+\begin{equation*}
+    \| \res_k \|_2
+    = |\beta_{k-1} \vec{e}_0^\cT \vec{T}^{-1} \vec{e}_0|.
+\end{equation*}
+The result then follows immediately from \cref{thm:Tinv_poly,thm:Tk_invertible_bd}.
+\end{proof}
+
+
+
+Interestingly, it is known that $\vec{T}$ cannot have eigenvalues near zero in two successive iterations, at least assuming that the eigenvalues of $\vec{A}$ are not too close to zero.
+Specifically,  \cite[Equation 3.10]{greenbaum_druskin_knizhnerman_99} asserts that
+\begin{equation}
+    \label{eqn:nodoublezeroT}
+\max\{ \sigma_{\textup{min}}([\vec{T}]_{:k-1,:k-1}),\sigma_{\textup{min}}(\vec{T})\} > \frac{\sigma_{\textup{min}}\A^2}{(2+\sqrt{3})\|\vec{A}\|_2}.
+\end{equation}
+Thus, as noted in \cref{rem:CG_MINRES}, we might still use the Lanczos-FA approximation to \( \vec{A}^{-1} \vec{v} \).
+
+
+

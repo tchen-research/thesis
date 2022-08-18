@@ -1,0 +1,178 @@
+
+
+\section{A posteriori bounds for Gaussian quadrature}
+
+The a priori bounds from the previous section do not take into account any properties of \( \Psi \) beyond the smallest and largest points of the support. 
+Thus, they are unable to take advantage of any fine-grained properties which may be present in \( \Psi \) (for instance, due to clustered eigenvalues of \( \vec{A} \)).
+In this section, prove an interseting property of Gaussian quadrature rules which allows us to obtain a posteriori bounds.
+In practice, these bounds are often better than the a priori bounds from the previous section \cite{chen_trogdon_ubaru_21}.
+
+
+\begin{definition}
+A function \( \gamma \) has a sign change at \( x \) if there exists \( x' < x \) such that \( \gamma(x')\neq 0 \) and \( x = \inf\{t > x' : \gamma(t) \gamma(x') < 0 \} \).
+\end{definition}
+
+\begin{restatable}{lemma}{weaksign}
+\label{thm:weak_sign}
+Suppose \( \gamma \) is weakly increasing on an interval \( (a,b) \).
+Then \( \gamma \) and has a sign change at \( x \) if and only if there exists \( x'<x \) such that \( \gamma(x') < 0 \), \( \gamma(y) \leq 0 \) for all \( y\in(a,x) \) and \( \gamma(y) > 0 \) for all \( y\in(x,b) \).
+%The \( \gamma \) has at most one sign change on \( (a,b) \).
+\end{restatable}
+
+\begin{proof}
+Suppose that \( \gamma \) has a sign change at \( x \) and let \( x' \) be as in the definition.
+Then, for any \( t > x' \), since \( \gamma \) is weakly increasing, \( \gamma(x') \leq \gamma(t) \).
+This means that \( \gamma(t) \gamma(x') < 0 \) implies \( \gamma(x') < 0 \) and \( \gamma(t) > 0 \).
+Since \( x = \inf\{t > x' : \gamma(t) \gamma(x') < 0 \}\), we have \( \gamma(y) > 0 \) for all \( y\in(x,b) \) and \( \gamma(y) \leq 0 \) for all \( y\in(x',x) \) and \( \gamma(x') < 0 \)
+
+The reverse direction follows directly from the definition of sign change.
+\end{proof}
+
+\begin{theorem}[{\cite[Theorem 22.1]{karlin_shapley_72}}]
+\label{thm:moments_CDF}
+Suppose \( \mu \) and \( \nu \) are two probability distribution functions constant on the complement of \( [a,b] \) whose moments are equal up to degree \( s \).
+Define \( \gamma : [a,b] \to [0,1] \) by \( \gamma(x) = \mu(x) - \nu(x) \).
+Then \( \gamma \) is identically zero or changes sign at least \( s \) times.
+\end{theorem}
+
+\begin{proof}
+Suppose \( \gamma \neq 0 \).
+For the sake of contradiction, suppose also that \( \gamma \) has fewer than \( s \) sign changes.
+Then, there exists a degree at most \( s-1 \) polynomial \( r \) such that for all \( x \in [a,b] \), \( r(x) \gamma(x) \geq 0 \); i.e. pick \( r \) to have a sign change at every sign change of \( \gamma \).
+
+Thus, since \( \gamma \neq 0 \) is right continuous and \( r \) is continuous, 
+\begin{equation*}
+    \int_{a}^{b} r(x) \gamma(x) \d{x} > 0.
+\end{equation*}
+
+Let \( R \) be an antiderivative of \( r \).
+Then, by integrating by parts over the closed interval \( [a,b] \),
+\begin{equation*}
+    \int_{a}^{b} r(x) \gamma(x) \d{x} 
+    = \left[ R(x) \gamma(x) \right]_{a^-}^b - \int_{a}^{b} R(x) \d\gamma(x).
+\end{equation*}
+Since \( \mu \) and \( \nu \) are equal on the compliment of \( [a,b] \),
+\begin{equation*}
+    \left[ R(x) \gamma(x) \right]_a^b 
+    = R(b) ( \mu(b) - \nu(b)) - R(a) (\mu(a^-) - \nu(a^-))
+    = 0
+\end{equation*}
+and, since \( \mu \) and \( \nu \) share moments up to degree \( s \),
+\begin{equation*}
+    \int_{a}^{b} R(x) \d\gamma(x)
+    = \int_{a}^{b} R(x) (\d\mu(x) - \d\nu(x))
+    =0 .
+\end{equation*}
+
+This contradicts the earlier assertion that this integral is non-zero.%, so \( \gamma \) must be zero or have at least \( k-1 \) sign changes.
+\end{proof}
+
+Note that for a probability distribution function, \( \qq[g]{\mu}{2k-1} \) is piecewise constant with \( k \) points of discontinuity.
+Using the fact that \( \qq[g]{\mu}{2k-1} \) and \( \mu \) share moments up to degree \( 2k-1 \) along with \cref{thm:moments_CDF}, we immediatley obtain the following bounds on \( \qq[g]{\mu}{2k-1} \) (proved in \cref{sec:proofs} for completeness).
+
+\note{check indexing}
+
+\begin{restatable}{corollary}{gqinterlace}
+\label{thm:gq_interlace}
+Suppose \( \mu \) is a probability distribution function constant on the complement of \( [a,b] \). % with finite moments up to degree \( 2k-1 \).
+Let \( \{ \theta_j \}_{j=1}^{k} \) and \( \{ \omega_j \}_{j=1}^{k} \) respectively be the nodes and weights of the Guassian quadrature rule \( \qq[g]{\mu}{2k-1} \).
+Define \( \qq[\downarrow]{\mu}{2k-1} \) and \( \qq[\uparrow]{\mu}{2k-1} \) by
+\begin{equation*}
+    \qq[\downarrow]{\mu}{2k-1}(x)
+    := \sum_{j=1}^{k-1} \omega_{j} \bOne\left[ \theta_{j+1} \leq x \right]
+    ,\qquad\text{and}\qquad
+    \qq[\uparrow]{\mu}{2k-1}(x)
+    := \omega_1 + \sum_{j=2}^{k} \omega_{j} \bOne\left[\theta_{j-1} \leq x \right].
+\end{equation*}
+    Then, for all \( x \in [a,b] \),
+\begin{equation*}
+    \qq[\downarrow]{\mu}{2k-1}(x)
+    \leq \mu(x) 
+    \leq \qq[\uparrow]{\mu}{2k-1}(x).
+\end{equation*}
+\end{restatable}
+
+
+\begin{proof}
+%    If \( \qq[g]{\mu}{s} = \mu \) the statement is trivially true.
+    Suppose \( \qq[g]{\mu}{2k-1} \neq \mu \) and define \( \gamma(x) = \mu(x) - \qq[g]{\mu}{2k-1}(x) \).
+    Observe that for any \( j = 1,\ldots, k-1 \), \( \qq[g]{\mu}{2k-1} \) is constant on \( (\theta_j,\theta_{j+1}) \), so \( \gamma \) is weakly increasing on this interval.
+    \Cref{thm:weak_sign} states that if \( \gamma \) change signs at some point \( y_j \in (\theta_j,\theta_{j+1}) \) then \( \gamma(x) > 0 \) for all \( x\in (y_j,\theta_{j+1}) \), \( j=1,\ldots, k-1 \) and \( \gamma(x) \leq 0 \) for all \( x\in(\theta_j,y_j) \), so \( \gamma \) cannot change signs at any other point in \( (\theta_j,\theta_{j+1}) \).
+     
+    Observe further that on \( (a,\theta_1) \), \( \qq[g]{\mu}{2k-1}(x) = 0 \leq \mu(x) \) so \( \gamma(x) \geq 0 \), and on \( (\theta_n,b) \), \( \qq[g]{\mu}{2k-1}(x) = 1 \geq \mu(x) \) so \( \gamma(x) \leq 0 \).
+    Thus, by \cref{thm:weak_sign}, no sign changes can occur on these intervals.%\( (a,\theta_1) \) or \( (\theta_n,b) \).
+
+    As a result, the only possible locations for sign changes of \( \gamma \) on \( (a,b) \) are \( \{\theta_j\}_{j=1}^{k} \) and \( \{y_j\}_{j=1}^{k-1} \).
+    This is exactly \( 2k-1 \) possible sign changes, so by \cref{thm:moments_CDF}, a sign change must occur at each of these points.
+    In particular, 
+    \iffalse
+    Using this and \cref{thm:weak_sign}, for all \( j=1,\ldots, k-1 \),
+    \begin{equation*}
+        \mu(x) &> \qq[g]{\mu}{2k-1}(x), & x&\in(y_j,\theta_{j+1})
+        \\
+        \mu(x) &\leq \qq[g]{\mu}{2k-1}(x) , & x&\in(\theta_j,y_j)
+    \end{equation*}
+    and additionally, \fi
+    since \( \gamma \) has a sign change at \( \theta_j \),
+    \begin{equation*}
+        \qq[g]{\mu}{2k-1}(\theta_j^-) 
+        \leq \mu(\theta_j) \leq \qq[g]{\theta_j}{s}.
+    \end{equation*}
+    Therefore, for \( x\in (\theta_j,\theta_{j+1}) \),
+    \begin{equation*}
+        \qq[\downarrow]{\mu}{2k-1}(x) =
+        \qq[g]{\mu}{2k-1}(\theta_{j}^-) \leq
+        \mu(\theta_j) \leq
+        \mu(x) 
+        \leq \mu(\theta_{j+1})
+        \leq \qq[g]{\mu}{2k-1}(\theta_{j+1})
+        = \qq[\uparrow]{\mu}{2k-1}(x).
+        \tag*{\qedhere}
+    \end{equation*}
+\end{proof}
+
+
+In turn, \cref{thm:gq_interlace} implies bounds on the Wasserstein and Kolmogorov--Smirnov distances between \( \mu \) and \( \qq[g]{\mu}{2k-1} \).
+
+
+\begin{restatable}{corollary}{gqapost}
+\label{thm:gq_apost}
+Suppose \( \mu \) is a probability distribution function constant on the complement of \( [a,b] \). % with finite moments up to degree \( 2k-1 \).
+Let \( \{ \theta_j \}_{j=1}^{k} \) and \( \{ \omega_j \}_{j=1}^{k} \) respectively be the nodes and weights of the Guassian quadrature rule \( \qq[g]{\mu}{2k-1} \).
+Then
+\begin{align*}
+    \KS(\mu,\qq[g]{\mu}{2k-1}) 
+    &\leq \max_{j=1,\ldots,k} \omega_j 
+    \\
+    \W(\mu,\qq[g]{\mu}{2k-1})
+    &\leq \sum_{j=0}^{k} \max\{\omega_j,\omega_{j+1}\} ( \theta_{j+1} - \theta_j )
+\end{align*}
+where we define \( \theta_0 = a \), \( \theta_{k+1} = b \), and \( d_0 = d_{k+1} = 0 \).
+\end{restatable}
+
+
+\begin{proof}
+Note that
+\begin{align*}
+    | \mu(x) - \qq[g]{\mu}{k}(x) | 
+    &\leq \max\{ | \qq[g]{\mu}{2k-1}(x) - \qq[\uparrow]{\mu}{2k-1}(x) |, |\qq[g]{\mu}{2k-1}(x) - \qq[\downarrow]{\mu}{2k-1}(x) | \} 
+    \\&= \max\{ \omega_j,\omega_{j+1} \} \bOne[ x\in [\theta_j,\theta_{j+1}) ].
+\end{align*}
+Thus,
+\begin{equation*}
+    \KS(\mu,\qq[g]{\mu}{2k-1})
+    = \sup_{x} | \mu(x) - \qq[g]{\mu}{k}(x) |
+    \leq \max_{j=1,\ldots, k} d_j. 
+\end{equation*}
+and
+\begin{equation*}
+    \W(\mu,\qq[g]{\mu}{2k-1})
+    = \int_{a}^{b} |\mu(s) - \qq[g]{\mu}{2k-1}(s) | \d{s}
+    %&\leq \int_{a}^{b} \max\{ | \qq[g]{\mu}{2k-1}(s) - \gqupper{k}(\mu)(s) |, |\qq[g]{\mu}{2k-1}(s) - \gqlower{k}(\mu)(s) | \} \d{s}
+    \leq \sum_{j=0}^{k} \max\{\omega_j,\omega_{j+1}\} ( \theta_{j+1} - \theta_j ).
+    \tag*{\qedhere}
+\end{equation*}
+\end{proof}
+
+
+

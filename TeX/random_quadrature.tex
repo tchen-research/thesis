@@ -1,0 +1,750 @@
+\chapter{Spectrum and spectral sum\\approximation}
+\label{chap:random_quadrature}
+
+
+We now turn to the tasks of spectrum and spectral sum approximation.
+Specifically, we will show how the algorithms from the previous chapter can be used to produce approximations to the CESM \( \Phi \), the probability distribution function with unit mass at each eigenvalue of \( \vec{A} \) which we defined in \cref{def:CESM}.
+This in turn induces approximations to \( \tr(\fA) \).
+
+Towards this end, suppose \( \vec{v} \) is a random vector satisfying \( \EE[\vec{v}\vec{v}^\cT] = n^{-1} \vec{I} \); i.e., \( \vec{v} \) is isotropic with appropriate scale.
+Then, using basic properties of the trace and expectation for any \( x\in\R \), we have 
+\begin{align*}
+    \EE[\Psi(x)]
+    &= \EE[\vec{v}^\cT \bOne[\vec{A}\leq x] \vec{v}]
+    = \EE[\tr (\vec{v}^\cT \bOne[\vec{A}\leq x] \vec{v})] 
+    \\& \hspace{3em} = \EE[\tr (\bOne[\vec{A}\leq x] \vec{v} \vec{v}^\cT )]
+    = \tr (\EE[ \bOne[\vec{A}\leq x] \vec{v} \vec{v}^\cT ])
+    \\& \hspace{6em} = \tr( \bOne[\vec{A}\leq x] \EE[ \vec{v} \vec{v}^\cT ] )
+    = n^{-1} \tr(\bOne[\vec{A}\leq x])
+    = \Phi(x).
+\end{align*}
+That \( \Psi \) is an unbiased estimator for \( \Phi \) at every point \( x\in\R \) is illustrated in \cref{fig:ch4_CESMwCESM}.
+Further, almost by definition, we see that \( \int f \,\d \Psi = \vec{v}^\cT \fA \vec{v} \) is an unbiased estimator for \( n^{-1} \tr(\fA) \).
+
+\begin{figure}[htb]
+    \includegraphics[width=\textwidth]{imgs/ch4_CESMwCESM.pdf}
+    \caption[{CESM \( \Phi \) and independent 10 samples of weighted CESM \( \Psi \)}]{
+        CESM \( \Phi \) 
+        ({\protect\raisebox{0mm}{\protect\includegraphics[]{imgs/legend/l1nm.pdf}}})
+        and 10 independent samples of weighted CESM \( \Psi \) corresponding to random \( \vec{v} \) 
+        ({\protect\raisebox{0mm}{\protect\includegraphics[]{imgs/legend/l1nm_alpha.pdf}}}).
+        Each copy of \( \Psi \) is an unbiased estimator for \( \Phi \) at each point \( x\in\R \).
+    }
+    \label{fig:ch4_CESMwCESM}
+\end{figure}
+
+Let \( \{ \Psi_\ell \}_{\ell=0}^{\nv-1} \) be independent and identically distributed (iid) copies of the weighted CESM \( \Psi \) corresponding to vectors \( \{ \vec{v}_\ell \}_{\ell=0}^{\nv-1} \) which are iid copies of \( \vec{v} \).
+Then the averaged weighted CESM 
+\label{eqn:ave_notation}
+\begin{equation*}
+    \samp{ \Psi_\ell } := \nv^{-1} \smop{\sum_{\ell=0}^{\nv-1}} \Psi_\ell 
+\end{equation*}
+is also an unbiased estimator for the CESM at every point \( x \).
+This implies 
+\begin{equation*}
+    \samp[\big]{ \vec{v}_{\ell}^\cT \fA \vec{v}_\ell }
+    := \nv^{-1} \smop{\sum_{\ell=0}^{\nv-1}} \vec{v}_\ell^\cT \fA \vec{v}_\ell
+    = \int f \,\d \samp{\Psi_\ell},
+\end{equation*}
+is an unbiased estimator for \( n^{-1} \tr(\fA) \).
+In both cases, the standard deviation of the averaged estimator decreases proportional to \( 1/\sqrt{\nv} \), so the averaged estimators concentrate more sharply about the mean as \( \nv \) increases.
+
+
+We refer to estimators of the form \( \vec{v}^\cT \vec{B} \vec{v} \), where \( \vec{v} \) is an isotropic random vector, as quadratic trace estimators.
+Thus, we see that the quadratic trace estimator for the spectral sum \( \tr(\fA) \) is an integral against the weighted CESM, which is itself a quadratic trace estimator for the CESM at every point \( x \).
+Moreover, since the quadratic form \( \vec{v}^\cT \fA\vec{v} \) can be written as an integral of \( f \) against the weighted CESM, classical results about the convergence of quadrature rules for approximating this integral can be leveraged to obtain error estimates for the convergence of our Krylov subspace approximations of \( \vec{v}^\cT \fA\vec{v} \).
+
+In order to approximate a sample of \( \Psi \), and therefore integrals against such samples, we can simply use the algorithms from the previous chapter. 
+Thus, we arrive at a prototypical algorithm for spectrum and spectral sum approximation,\cref{alg:protoalg}.
+The output \( \samp{\qq{\Psi_\ell}{s}} \) of \cref{alg:protoalg} is a distribution function which approximates the CESM \( \Phi \).
+For any function \( f:\R\to\R \), this approximation naturally yields an approximation to the spectral sum \( \tr(\fA) \) by integration.
+
+\begin{labelalgorithm}[H]{protoalg}{spec-approx}{Prototypical randomized spectrum and spectral sum approximation}
+\begin{algorithmic}[1]
+    \Procedure{\thealgorithmname}{$\vec{A}, \nv, k, \circ$}
+    \For{ \( \ell = 0,1,\ldots,\nv-1 \) }
+    \State define (implicitly) \( \Psi_\ell \stackrel{\text{iid}}{\sim} \Psi \) by sampling \( \vec{v}_\ell \stackrel{\text{iid}}{\sim} \vec{v} \), \( \EE[\vec{v}\vec{v}^\cT] = n^{-1} \vec{I} \) %\operatorname{Unif}(\{ \pm n^{-1/2} \}^n) \) 
+    \State compute moments of \( \Psi_{\ell} \) through degree \( s \) by constructing \( \mathcal{K}_{k+1}(\vec{A},\vec{v}_\ell) \) % (using \( k \) matrix-vector products)% with \( \vec{A} \).
+    \State approximate \( \Psi_{\ell} \) by \( \qq{\Psi_{\ell}}{s} \) induced by a polynomial operator \( \ff{\:\cdot\:}{s} \) 
+    \EndFor
+    \State \Return \( \samp{ \qq{\Psi_{\ell}}{s} } := \nv^{-1} \sum_{\ell=0}^{\nv-1} \qq{\Psi_\ell}{s} \)
+
+\EndProcedure
+\end{algorithmic}
+\end{labelalgorithm}
+
+
+\section{Related work and context}
+\label{sec:past_work}
+%\cnote{Still need to make sure this is comprehensive and representative of past work. Maybe we don't need such a big related work section.. Just add one paragraph to previous section.}
+
+Specific implementations of the prototypical algorithm, given in \cref{alg:protoalg}, are by far the most common algorithms for spectral sum and spectrum approximation, and they have found widespread use in a range of disciplines \cite{lin_saad_yang_16,ubaru_chen_saad_17}.
+As we have alluded to, the two key ingredients for such algorithms are (i) polynomial approximation and quadrature and (ii) quadratic trace estimation. 
+The first of these ingredients has been studied for centuries \cite{trefethen_19}, so the popularization of the latter \cite{girard_87,hutchinson_89,skilling_89} quickly lead to a variety algorithms fitting this framework.
+In this section we focus primarily on conceptual and theoretical advancements relating to the protoalgorithm.
+We hope our brief review of prior work will help tie together several clusters of literature which have remained largely disjoint.
+
+
+Both \cite{girard_87,hutchinson_89} focus on estimating the trace of a large implicit matrix \( \vec{B} = \vec{A}^{-1} \) for some matrix \( \vec{A} \).
+While \cite{girard_87} suggests the use of the conjugate gradient algorithm, neither paper discusses in detail how to approximate products with \( \vec{B} \).
+Therefore, to the best of our knowledge, \cite{skilling_89} contains the first example of an algorithm which truly fits into the form considered in this paper.
+In \cite{skilling_89}, an approximation to \( \Phi \) based on an expansion in Chebyshev polynomials is described.
+This approximation is then used to approximate \( \tr(\ln\A) = \ln \,\det\A \).
+
+
+The Chebyshev based approach of \cite{skilling_89} was improved in \cite{silver_roder_94} where a damping Kernel was introduced to avoid Gibbs oscillations.
+The connection to Jackson's damping and other classical ideas from approximation theory were subsequently considered in \cite{silver_roeder_voter_kress_96}.
+The resulting algorithm is now typically called the kernel polynomial method (KPM) and is widely used in the computational physical sciences; see \cite{weisse_wellein_alvermann_fehske_06} for a review.
+
+
+Essentially in parallel, stochastic trace estimation was combined with quadrature explicitly.
+Typically, such approaches are based on the Lanczos algorithm which can be used in a straightforward way to compute certain quadrature rules for \( \Psi \) \cite[Chapter 6]{golub_meurant_09}, \cite{gautschi_06}.
+In \cite{bai_fahey_golub_96}, Gauss, Gauss-Lobatto, and Gauss-Radau quadrature rules are used to derive upper and lower bounds for \( \int f \,\d\Psi \)
+when \( f(x) = 1/x \) or \( f = \ln(x) \). 
+These bounds were in turn combined with stochastic trace estimation to provide probabilistic upper and lower bounds on the traces of the corresponding matrix functions. 
+The Gaussian quadrature based approach is now typically referred to as stochastic Lanczos quadrature (SLQ).
+
+
+Bounds on the number of samples \( \nv \) required so that the average of iid quadratic trace estimators is within \( \epsilon \) of the true trace with at least probability \( 1-\eta \) were derived in \cite{avron_toledo_11} and subsequently improved on in \cite{roostakhorasani_ascher_14}.
+These bounds enabled a range of analyses which explicitly balanced the number of samples \( \nv \) with the approximation degree \( s \). 
+For instance, \cite{han_malioutov_avron_shin_17} and \cite{ubaru_chen_saad_17} respectively consider approximation of spectral sums corresponding to analytic functions by a Chebyshev based approach and SLQ.
+Later, \cite{cortinovis_kressner_21} gives stronger bounds for quadratic trace estimators, and as in \cite{ubaru_chen_saad_17}, these bounds are used to analyze SLQ.
+
+Around this time, spectrum approximation in Wasserstein distance was analyzed for KPM \cite{braverman_krishnan_musco_22} and SLQ \cite{chen_trogdon_ubaru_21}.
+We remark that \cite{braverman_krishnan_musco_22,chen_trogdon_ubaru_21} both arrive at the conclusion that the number of samples required to approximate \( \Phi \) in Wasserstein distance to accuracy \( \epsilon \) actually \emph{decreases} as the matrix size \( n \) increases, provided \( \epsilon \gg n^{-1/2} \) as \( n\to\infty \).
+While not stated explicitly, the analysis in \cite{cortinovis_kressner_21} implies this same fact for the number of samples required to approximate \( \int f \,\d\Phi = n^{-1} \tr(\fA) \) to additive error \( \pm \epsilon \).
+This fact was already known to the physics community \cite{weisse_wellein_alvermann_fehske_06}, although, to the best of our knowledge, was not proved rigorously in the literature.
+
+
+\subsection{Note on history of stochastic quadratic trace estimators and their analysis}
+\label{sec:trace_hist} 
+
+What we are calling a quadratic trace estimator is often called the \emph{Hutchinson's trace estimator}, especially when \( \vec{v} \) is chosen uniformly from the set of vectors with entries \( \pm n^{-1/2} \).
+However, \cite{hutchinson_89} was not the first use of quadratic trace estimators for the task of approximating the trace of an implicit matrix; \cite{hutchinson_89} itself cites \cite{girard_87} which addresses the same task by using samples of \( \vec{v} \) drawn uniformly from the unit hypersphere.
+Algorithms based on the use of random vectors back at least to the mid 1970s \cite{alben_blume_krakauer_schwartz_75,weaire_williams_76,weaire_williams_77,deraedt_devries_89}.
+
+In fact, such estimators are a special case of the concept of \emph{typicality} in quantum physics.
+%Typicality asserts that properties derived from a suitably sampled random pure state (vector) tend to be near to some typical value 
+Typicality has its origins in work of Schr\"odinger \cite{schrodinger_27} and von Neumann \cite{vonneumann_29} from the late 1920s but was dismissed and/or forgotten until a resurgence in the mid 2000s \cite{gemmer_michel_mahler_09,goldstein_lebowitz_tumulka_zanghi_06,popescu_short_winter_06,reimann_07};
+see \cite{goldstein_lebowitz_mastrodonato_tumulka_zanghi_10} for a historical overview and discussion in a modern context and \cite{jin_willsch_willsch_lagemann_michielsen_deraedt_21} for a review of algorithms based on typicality.
+
+%\cite{deraedt_devries_89} DOS random state
+
+
+
+Likewise, while the first tail bounds for quadratic trace estimators are typically attributed to \cite{avron_toledo_11,roostakhorasani_ascher_14}, quadratic trace estimators were analyzed before either of these papers.
+For instance, \cite{reimann_07} provides tail bounds based on Chebyshev's inequality for quadratic trace estimators used for the specific purpose of estimating the trace of a symmetric matrix.
+Sub-Gaussian concentration inequalities for quadratic trace estimators, similar to those in \cite{avron_toledo_11,roostakhorasani_ascher_14} are derived in \cite{popescu_short_winter_06} using Levy's Lemma, a general result about concentration of measure \cite{ledoux_01}; see also \cite[Theorem 2.2.2]{gogolin_10}.
+
+
+There are also many earlier analyses of quadratic trace estimators outside of the specific context of trace estimation.
+For instance, \cite{hanson_wright_71} provides concentration bounds for quadratic trace estimators when the entries of \( \vec{v} \) are independent symmetric sub-Gaussian random variables. 
+In fact, some of the strongest bounds for quadratic trace estimators \cite{meyer_musco_musco_woodruff_21,persson_cortinovis_kressner_22} make use of so called \emph{Hanson--Wright inequalities} \cite{rudelson_vershynin_13} introduced in \cite{hanson_wright_71}.
+Earlier still, \cite{grenander_pollak_slepian_59} states as fact that the expectation of such estimators, when \( \vec{v} \) has iid Gaussian entries, is the sum of the eigenvalues of the matrix in question, citing a book \cite{cramer_46} from the 1940s. 
+%Similar concentration inequalities for quadratic trace estimators used in a specific task are given in \cite{popescu_short_winter_06} and are derived from L\'{e}vy's Lemma \cite{levy_51}, a result about concentration of measure  
+
+
+
+\subsection{Other randomized trace estimation algorithms}
+
+As a consequence of the central limit theorem, the average of iid samples of quadratic trace estimators requires \( O(\epsilon^{-2}) \) samples to reach accuracy \( \epsilon \). 
+In fact, any algorithm which returns a linear combination of estimators depending on vectors drawn independently of \( \vec{A} \) requires \( O(\epsilon^{-2}) \) samples to obtain an approximation of the trace accurate to within a multiplicative factor \( 1\pm \epsilon \) \cite{wimmer_wu_zhang_14}.
+A number of papers aim to avoid this dependence on the number of samples by incorporating low-rank approximation to \( \fA \) \cite{lin_17,gambhir_stathopoulos_orginos_17,saibaba_alexanderian_ipsen_17,large_matrices_density_review_18,li_zhu_21,meyer_musco_musco_woodruff_21,persson_cortinovis_kressner_22,chen_hallman_22}.
+
+
+In \cite{meyer_musco_musco_woodruff_21} algorithm called Hutch++ in introduced and proved to output an estimate the trace of a positive definite matrix to relative error \( 1\pm \epsilon \) using just \( O(\epsilon^{-1}) \) matrix-vector products.
+It is also shown that this \( \epsilon \) dependence is nearly optimal in certain matrix-vector query models.
+The practicality of Hutch++ was improved in \cite{persson_cortinovis_kressner_22} which describes a variant which outputs an \( (\epsilon,\delta) \) approximation to the trace.
+Such methods can be used to compute the trace of matrix functions by computing products with \( \fA \) (e.g. using black-box Krylov subspace methods). 
+
+A so-called \emph{Krylov-aware} approach to estimating the trace of matrix functions was introduced in \cite{chen_hallman_22}.
+Rather than treating products with \( \fA \) as a black-box, \cite{chen_hallman_22} advocates a more careful approach in which products with \( \vec{A} \) are viewed as the natural computational primative. 
+This allows several efficincies not present in black-box versions of Hutch++ for matrix functions by producing better low-rank approximations. 
+At least in terms of the total number of matrix-vector products used, the Krylov-aware approach always outperforms Hutch++ and related variants.
+
+Finally, we note several more specialized techniques which may be of interest.
+Variance reduction techniques based on multi-level Monte Carlo methods are studied in \cite{hallman_troester_21,frommer_khalil_ramirezhidalgo_21}.
+In \cite{dharangutte_musco_21}, the problem of estimating the traces of a sequence of slowly-varying implicit matrices is studied. 
+Such a setting occurs naturally in machine learning and physics. 
+In physics, in order to compute important quantities for open quantum systems interacting strongly with their environment, \cite{chen_cheng_22} studies how to approximate the \emph{partial trace} of matrix functions.
+
+\section{Analysis}
+
+A simple approach to analyzing the protoalgorithm is to separately analyze the errors due to randomness in quadratic trace estimators from the error in approximating quadratic forms. 
+Specifically, we have
+\begin{align}
+    \bigg| \int f \,\d\big(\Phi - \samp{\qq{\Psi_\ell}{s}}\big) \bigg|
+    &\leq 
+    \bigg| \int f \,\d\big(\Phi - \samp{\Psi_\ell}\big) \bigg|
+    + \bigg| \int f \,\d\big(\samp{\Psi_\ell} - \samp{\qq{\Psi_\ell}{s}}\big) \bigg|
+    \nonumber
+    \\&=
+    \bigg| \int f \,\d\big(\Phi - \samp{\Psi_\ell}\big) \bigg|
+    + \bigg| \int f \,\d\samp{\Psi_\ell - \qq{\Psi_\ell}{s}} \bigg|
+    \nonumber
+    \\&\leq
+    \bigg| \int f \,\d\big(\Phi - \samp{\Psi_\ell}\big) \bigg|
+    + \samp[\bigg]{ \bigg| \int f \,\d\big(\Psi_\ell - \qq{\Psi_\ell}{s}\big) \bigg| }.
+    %\nonumber
+    %\\&=n^{-1} \bigg| \tr(\fA) - \samp{\vec{v}_{\ell}^\cT \fA \vec{v}_\ell} \bigg|
+    %+ \samp[\bigg]{ \bigg| \int f \,\d\big(\Psi_\ell - \qq{\Psi_\ell}{s}\big) \bigg| }.
+    \label{eqn:proto_triangle_f}
+\end{align}
+%Here we are using \( \samp{\:\cdot\:} \) to denote the average over \( \ell=1, \ldots, \nv \) and have suppressed the variable and bounds of integration for notational clarity.
+
+The first term in \cref{eqn:proto_triangle_f} is controlled by the convergence of \( \samp{\Psi_{\ell}} \) to \( \Phi \) (as \( \nv \to \infty \)). 
+Since
+\begin{equation*}
+    \bigg| \int f \,\d\big(\Phi - \samp{\Psi_\ell}\big) \bigg|
+    =
+    \left| n^{-1} \tr(\fA) - \samp{ \vec{v}_{\ell}^\cT \fA \vec{v}_\ell } \right|,
+\end{equation*}
+it can be analyzed in terms of bounds for quadratic trace estimators. 
+Next, for each \( \ell \), the second term is controlled by the quality of the approximation of \( \Psi_{\ell} \) by \( [\Psi_{\ell}]_s^\circ \) (as \( s \to\infty \)).
+Since
+\begin{equation*}
+    \bigg| \int f \,\d\big(\Psi_\ell - \qq{\Psi_\ell}{s}\big) \bigg|
+    = 
+    \bigg| \int (f - \ff{f}{s})  \,\d \Psi_\ell\bigg|,
+\end{equation*}
+we can analyze this term bounds for Krylov subspace methods for quadratic forms.
+
+
+\subsection{Uniform unit test vectors}
+
+\begin{definition}
+    \label{eqn:hypersphere}
+    The complex unit hypersphere \( \mathbb{S}^{n-1} \) is the set of unit vectors; i.e. 
+    \begin{equation*}
+        \mathbb{S}^{n-1} := \{ \vec{u} : \| \vec{w} \|_2 = 1\}.
+    \end{equation*}
+\end{definition}
+
+In this section, we analyze the weighted CESM when \( \vec{v} \) is drawn from the uniform distribution on \( \mathbb{S}^{n-1} \).
+In the case that \( \vec{A} \) is symmetric, similar results hold for uniform vectors drawn from the real unit hypersphere; see \cite{chen_trogdon_ubaru_22}.
+
+\begin{lemma}
+\label{thm:psi_beta}
+Suppose \( \vec{v} \sim \operatorname{Unif}(\mathbb{S}^{n-1}) \) and, for any \( t\in \R \), define \( m(x) = n \Phi(x) \).
+Then, 
+\begin{align*}
+    \Psi(x) \sim \operatorname{Beta} \big( m(x), n - m(x) \big).
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+    Let \( \vec{U} = [\vec{u}_1, \ldots, \vec{u}_n] \), where \( \vec{u}_i \) is the \( i \)-th normalized eigenvector of \( \vec{A} \).
+    Since \( \vec{U} \) is unitary, by the invariance of \( \operatorname{Unif}(\mathbb{S}^{n-1}) \) under orthogonal transforms, we have that \( \vec{U}^\cT \vec{v} \sim \operatorname{Unif}(\mathbb{S}^{n-1}) \).
+    
+    We may therefore assume \( \vec{U}^\cT\vec{v} \stackrel{\textup{dist.}}{=} \vec{x} / \| \vec{x} \|_2 \), where \( \vec{x} \sim \operatorname{ComplexNormal}(\vec{0},\vec{I}) \). % and ``\( \stackrel{\textup{dist.}}{=} \)'' denotes equality in distribution.
+    Recall that the \( i \)-th weight of \( \Psi \) is given by \( w_i = |\vec{v}^\cT \vec{u}_i|^2 \).
+    Thus, the \( w_i \) have joint distribution given by, 
+\begin{align*}
+    w_i 
+    \stackrel{\textup{dist.}}{=} 
+    \left|\frac{[\vec{x}]_i}{\|\vec{x}\|_2} \right|^2 
+    = \frac{|[\vec{x}]_i|^2}{\sum_{i=0}^{n-1}|[\vec{x}]_i|^2},
+\end{align*}
+for \( i=0,1,\ldots, n-1 \).
+
+Write, for notational convenience, \( m = m(x) = n \Phi(x) \).
+Then, 
+\begin{align*}
+    \Psi(x)
+    = \smop{\sum_{j=0}^{m-1}} w_j
+    \stackrel{\textup{dist.}}{=}
+    \frac{\sum_{i=0}^{m-1} |[\vec{x}]_i|^2}{\sum_{i=0}^{n-1} |[\vec{x}]_i|^2}.
+\end{align*}    
+    It is well known that for independent chi-square random variables \( Y \sim \chi_{\alpha}^2 \) and \( Z \sim \chi_{\beta}^2 \) (see, for example, \cite[Section 25.2]{johnson_kotz_balakrishnan_94}),
+\begin{align*}
+    \frac{Y}{Y+Z}\sim \operatorname{Beta} \left( \frac{\alpha}{2}, \frac{\beta}{2} \right).
+\end{align*}
+    Thus, since \( \sum_{i=0}^{m-1} |[\vec{x}]_i|^2 \) and \( \sum_{i=m}^{n-1} |[\vec{x}]_i|^2 \) are independent chi-square random variables with \( 2m \) and \( 2(n-m) \) degrees of freedom (because we are using complex normal random variables) respectively, \( \Psi(x) \) is a beta random variable with parameters \( m \) and \( n-m \).
+\end{proof}
+
+\begin{definition}
+A random variable \( X \) is \( \sigma^2\)-sub-Gaussian if %\( \EE[|X|] < \infty \) and  
+\begin{align*}
+    \EE\big[ \exp(\lambda (X - \EE[X]))\big]
+    \leq \exp \left( \frac{\lambda^2 \sigma^2}{2} \right)
+    ,~\forall \lambda \in \mathbb{R}.
+\end{align*}
+%The smallest value of \( \sigma^2 \) such that \( X \) is \( \sigma^2 \) sub-Gaussian is called the optimal proxy variance of \( X \).
+\end{definition}
+
+\begin{lemma}
+\label{thm:subgaussian_sum}
+Suppose \( X \) is \( \sigma^2 \)-sub-Gaussian.
+Let \( X_0, \ldots, X_{n_{\textup{v}}-1} \) be iid samples of \( X \).
+Then for all \( \epsilon \geq 0 \),
+\begin{align*}
+    \PP\big[ |\samp{X_i} - \EE[X] | > \epsilon \big]
+    \leq 2 \exp \left( - \frac{n_{\textup{v}}}{2 \sigma^2} \epsilon^2 \right).
+\end{align*}
+\end{lemma}
+
+
+\begin{proof}
+We follow a standard argument; see for instance \cite{vershynin_18}.
+WLOG assume \( \EE[X] = 0 \).
+Then,
+\begin{align*}
+    \PP[ \nv \samp{X_i} \geq \nv \epsilon ] 
+    &= \PP[ \exp( \lambda \nv\samp{X_i} ) \geq \exp(\lambda \nv \epsilon )]
+    \\&\leq \exp(- \nv \lambda \epsilon) \EE[ \exp(\lambda \nv \samp{X_i}) ] \tag{Markov}
+    \\&= \exp(- \nv \lambda \epsilon) \EE[ \exp(\lambda X) ]^{\nv} \tag{iid}
+    \\&\leq \exp(- \nv \lambda \epsilon) \exp( \nv \lambda^2 \sigma^2 / 2) \tag{sub-Gaussian}
+    \\&= \exp(- \nv \lambda \epsilon + \nv \lambda^2 \sigma^2 / 2). 
+\end{align*}
+This expression is minimized when \( \lambda = t / \sigma^2 \) from which we obtain,
+\begin{align*}
+    \PP[ \samp{X_i} \geq t] \leq \exp \left( - \frac{\nv}{2\sigma^2} t^2 \right). \tag*{\qedhere}
+\end{align*}
+\end{proof}
+
+\begin{theorem}\textup{\cite[Theorem 1]{marchal_arbel_17}}
+\label{thm:beta_tails}
+Suppose \( X \sim \operatorname{Beta}(\alpha,\beta) \).
+Then, \( \EE[X] = \alpha / (\alpha + \beta) \), and \( X \) is \( (4(\alpha +\beta + 1))^{-1} \)-sub-Gaussian.
+If \( \alpha = \beta \), then there is no smaller \( \sigma^2 \) such that \( X \) is \( \sigma^2 \)-sub-Gaussian.
+\end{theorem}
+
+With these results in place, the following theorem for spectrum approximation is straightforward.
+\begin{theorem}
+\label{thm:CESM_estimator_prob}
+Given a positive integer \( \nv \), suppose \( \{ \vec{v}_{\ell} \}_{\ell=0}^{\nv-1} \stackrel{\textup{iid}}{\sim} \operatorname{Unif}(\mathbb{S}^{n-1}) \).
+Then, for all \( \varepsilon > 0 \),
+\begin{align*}
+    \max_{x\in\R} \PP\left[ \left| \Phi(x) - \samp{ \Psi_{\ell}(x) } \right| > \varepsilon \right]
+    &\leq
+    2 \exp\left( - 2\nv (n+1) \varepsilon^2 \right).
+    \\
+    \PP\left[ \max_{x\in\R} \left| \Phi(x) - \samp{ \Psi_{\ell}(x) } \right| > \varepsilon \right]
+    &\leq
+    2 n \exp\left( - 2\nv (n+1) \varepsilon^2 \right).
+\end{align*}
+\end{theorem}
+
+\begin{proof}
+First note that the maximums exist because \( \Phi\) and \( \samp{\Psi_i} \) are right continuous and piecewise constant except at \( \{ \lambda_i[\vec{A}] \}_{i=1}^{n} \).
+
+For any \( t \), let \( m  = m(x) = n \Phi(x) \).
+Using \cref{thm:psi_beta,thm:beta_tails,thm:subgaussian_sum} we have that for any \( t \),
+\begin{align*}
+    \PP\big[ \left| \Phi(x) - \samp{ \Psi_i(x) } \right| > \epsilon \big]
+    \leq 2 \exp \left( - \frac{n_{\textup{v}}}{2 (4(m + (n-m)+1) )^{-1}} \epsilon^2 \right).
+\end{align*}
+%Both \( \Psi \) and \( \samp{\Psi_i} \) are right continuous, so the first result follows from a limit argument. 
+
+We also have
+\begin{align*}
+    \sup_{x\in\R} |\Phi(x) - \samp{\Psi_i(x)}|
+    = \max_{0\leq i<n-1} | \Phi(\lambda_i[\vec{A}]) - \samp{\Psi_i(\lambda_i[\vec{A}])} |.
+\end{align*}
+%\note{TODO: line number}
+    The second result follows by applying a union bound to the events that the maximum is attained at \( \lambda_i \) for each \( i=0,1,\ldots, n-2 \) (note since \( \|\vec{v}\|_2=1 \), \( \Phi \) and \( \Psi_{\ell} \) agree at \( \lambda_{n-1} \)).
+\end{proof}
+
+This result can be used to obtain a bound for quadratic trace estimation.
+\begin{theorem}
+    \label{thm:unif_QTE}
+    Set \( \nv \geq 1 \) and sample \( \{ \vec{v}_{\ell} \}_{\ell=0}^{\nv-1} \stackrel{\textup{iid}}{\sim} \operatorname{Unif}(\mathbb{S}^{n-1}) \).
+    Then
+    \begin{equation*}
+        \PP\left[ \left| n^{-1} \tr(\vec{A}) - \samp{ \vec{v}_{\ell}^\cT \vec{A} \vec{v}_\ell } \right| > \varepsilon (\lmax - \lmin)  \right]
+        \leq 2 n \exp (- 2( n+1 ) \nv \varepsilon^2 ).
+    \end{equation*}
+\end{theorem}
+
+\begin{proof}
+    Since \( \samp{ \Psi_\ell } \) and \( \Phi\) are both constant on each of \( (-\infty , \lmin ) \) and \( ( \lmax ,\infty) \), 
+\begin{equation*}
+    \W(\Phi,\samp{\Psi_\ell})
+    = \int | \Psi - \samp{\Psi_\ell} | \,\d{x}
+    \leq (\lmax - \lmin) \| \Psi - \samp{\Psi_\ell} \|_{\R}.
+\end{equation*}
+Using \cref{thm:CESM_estimator_prob},
+%\begin{align*}
+%    \PP\left[ \max_{x\in\R}|\Phi(x) - \samp{\Psi_\ell(x)} | > \varepsilon  \right] \leq 2 n \exp (- ( n+2 ) \nv \varepsilon^2 ).
+%\end{align*}
+%Combining these we have that
+we find that
+\begin{equation*}
+    \PP\big[ \W(\Phi,\samp{\Psi_\ell}) > \varepsilon (\lmax-\lmin) \big] 
+    \leq 2 n \exp (- 2( n+1 ) \nv \varepsilon^2 ).
+\end{equation*}
+    Thus, using \cref{thm:wasserstein_1lip} and the fact that \( x \) is 1-Lipshitz, 
+\begin{equation*}
+    \PP\left[ \left| \int x \,\d\Phi - \int x \,\d\samp{\Psi_\ell}) \right| > \varepsilon (\lmax-\lmin) \right] 
+    \leq 2 n \exp (- 2( n+1 ) \nv \varepsilon^2 ).
+\end{equation*}
+Next, recall that \( \int x \,\d\Phi = n^{-1} \tr(\vec{A}) \) and \( \int x \,\d\samp{\Psi_\ell} = \samp{ \vec{v}_{\ell}^\cT \vec{A} \vec{v}_\ell } \).
+Thus, we obtain a bound for the quadratic trace estimator:
+\begin{equation*}
+    \PP\left[ \left| n^{-1} \tr(\vec{A}) - \samp{ \vec{v}_{\ell}^\cT \vec{A} \vec{v}_\ell } \right| > \varepsilon (\lmax - \lmin) \right] 
+    \leq 2 n \exp (- 2( n+1 ) \nv \varepsilon^2 ). \qedhere
+\end{equation*}
+%The result follows by replacing \( \vec{A} \) with \( f[\vec{A}] \) in the above expression.
+\end{proof}
+
+This can be restated in terms of matrix functions.
+\begin{corollary}
+    \label{thm:wCESM_tr}
+    Suppose \( f \) is bounded between \( f_{\textup{min}} \) and \( f_{\textup{max}} \) on the spectrum of \( \vec{A} \). 
+    Set \( \nv \geq \frac{1}{2}( f_{\textup{max}} - f_{\textup{min}} )^2 (n+1)^{-1} \varepsilon^{-2} \ln(2n \eta^{-1}) \) and sample \( \{ \vec{v}_{\ell} \}_{\ell=0}^{\nv-1} \stackrel{\textup{iid}}{\sim} \operatorname{Unif}(\mathbb{S}^{n-1}) \).
+    Then
+    \begin{equation*}
+        \PP\left[ \left| n^{-1} \tr(\fA) - \int f \,\d\samp{\Psi_\ell}) \right| > \varepsilon \right] \leq \eta.
+    \end{equation*}
+\end{corollary}
+
+As we remarked in \cref{sec:past_work}, bounds similar to \cref{thm:unif_QTE} have been studied for other distributions for \( \vec{v} \). 
+The best bounds are for Gaussian and Rademacher vectors, which have \emph{independent} entries. 
+For such distributions, the best bounds depend on \( \|\vec{A}\|_\F^2 \) rather than \( n\|\vec{A}\|_2^2 \) and are therefore significantly stronger than \cref{thm:unif_QTE} when the stable rank \( \| \vec{A} \|_\F^2 / \| \vec{A}\|_2^2 \) is small. 
+It is likely that the bounds in \cref{thm:unif_QTE} can be improved by a more careful analysis of Beta random variables. 
+In particular, while the sub-Gaussian constant from \cref{thm:beta_tails} is sharp when \( \alpha = \beta \), it can be improved when \( \alpha \approx 0 \) or \( \beta\approx 0 \) \cite{zhang_zhou_20}.
+
+
+\section{Numerical experiments}
+
+\subsection{Approximating sparse spectra}
+
+If the spectrum of \( \vec{A} \) is \( S \)-sparse; i.e., there are only \( S \) distinct eigenvalues, then the \( s \)-point Gaussian quadrature rule will be exactly equal to the weighted CESM for all \( s \geq S \), at least in exact arithmetic.
+Thus, the runtime required by SLQ is determined by \( S \) and the number of samples of the weighted CESM which are required to get a good approximation to the true CESM.
+The interpolation and approximation based approaches, which are based on the orthogonal polynomials of some fixed distribution function \( \mu \), are unable to take advantage of such sparsity.
+Indeed, unless the eigenvalues of \( \vec{A} \) are known a priori, such methods have fixed resolution \( \sim s^{-1} \) due to the fixed locations of the zeros of the orthogonal polynomials with respect to \( \mu \).
+Moreover, quadrature by approximation methods suffer from Gibbs oscillations unless a damping kernel is used, in which case the resolution is further decreased.
+
+
+\begin{figure}[htb]
+    \includegraphics[width=\textwidth]{imgs/ch4_Kneser_smoothed.pdf}
+    \caption[{Approximations to a sparse spectrum with just \( 12 \) eigenvalues.}]{%
+    Approximations to a sparse spectrum with just \( 12 \) eigenvalues.
+    \hspace{.25em}\emph{Legend}:
+    true spectrum  
+    ({\protect\raisebox{0mm}{\protect\includegraphics[]{imgs/legend/ms4.pdf}}}).
+    Gaussian quadrature approximation: \( k=12 \)
+    ({\protect\raisebox{0mm}{\protect\includegraphics[]{imgs/legend/m1.pdf}}}).
+    damped quadrature by approximation: \( s=500 \)
+    ({\protect\raisebox{0mm}{\protect\includegraphics[]{imgs/legend/l3nm.pdf}}}).
+    \hspace{.25em}\emph{Takeaway}: The Gaussian quadrature produces an extremely good approximation using just \( 12 \) matrix-vector products.
+    Even with many more matrix-vector products, quadrature by approximation does not have the same resolution. 
+    }
+    \label{fig:Kneser}
+\end{figure}
+
+
+In this example, we approximate the CESM of the adjacency matrix of a Kneser graph.
+The \( (N,K) \)-Kneser graph is the graph whose vertices correspond to size \( K \) subsets of \( \{1, 2, \ldots, N\} \) and whose edges connect vertices corresponding to disjoint sets.
+It is not hard to see that the number of vertices is \( \binom{N}{K} \) and the number of edges is \( \frac{1}{2}\binom{N}{K}\binom{N-K}{K} \).
+%Thus, for \( N < 2K \) the graph has no edges. 
+The spectrum of Kneser graphs is known as well. 
+Specifically, there are \( K+1 \) distinct eigenvalues whose values and multiplicities are:
+\begin{equation*}
+    \lambda_i = (-1)^i\binom{N-K-i}{K-i}
+    ,\qquad
+    m_i = \binom{N}{i} - \binom{N}{i-1}
+    ,\qquad 
+    i=0,1,\ldots, K.
+\end{equation*}
+
+We conduct a numerical experiment with \( N = 23 \) and \( K = 11 \), the same values used in \cite{large_matrices_density_review_18}.
+This results in a graph with 1,352,078 vertices and 8,112,468 edges.
+Thus, the adjacency matrix is highly sparse. 
+We compare the Gaussian quadrature approximation with the damped quadrature by approximation. 
+In both cases we use a single random test vector \( \vec{v} \).
+For the Gaussian quadrature, we set \( k = 12 \).
+For the damped quadrature by approximation we set \( s=500 \) and use Jackson damping with \( \mu = \mu_{a,b}^T \), where \( a = -11.1 \) and \( b=12.1 \).
+The results are shown in \cref{fig:Kneser}.
+Note that the Gaussian quadrature matches almost exactly despite having used only \( k=12 \) matrix-vector products. 
+On the other hand, even after \( k=250 \) matrix-vector products, the damped quadrature by approximation has a much lower resolution.
+
+\begin{remark}
+There are sublinear time algorithms for approximate matrix-vector products with the (normalized) adjacency matrix.
+Specifically, in a computational model where it is possible to 
+(i) uniformly sample a random vertex in constant time, 
+(ii) uniformly sample a neighbor of a vertex in constant time, and 
+(iii) read off all neighbors of a vertex in linear time, 
+then an \( \epsilon_{\textup{mv}} \)-accurate approximate to the a matrix-vector product with the adjacency matrix can be computed, with probability \( 1-\eta \), in time \( O(n (\epsilon_{\textup{mv}})^{-2}\ln(\eta^{-1})) \).
+For dense graphs, this is sublinear in the input size \( O(n^2) \) of the adjacency matrix.
+See \cite{braverman_krishnan_musco_22} for an analysis in the context of spectrum approximation.
+\end{remark}
+
+\subsection{Approximating ``smooth'' densities}
+\label{sec:smooth_density}
+%the limiting density of large random matrix models}
+
+There are a range of settings in which the spectral density of \( \vec{A} \) is close to a smooth slowly varying density.
+In such cases, we may hope that our approximation satisfies certain known criteria. 
+For instance, that the approximation is also a slowly varying density, that the behavior of the approximation at the endpoints of the support satisfies the right growth or decay conditions, etc.
+In this example, we consider how parameters in \cref{alg:protoalg} can be varied so that the resulting approximation enjoys certain desired properties. 
+
+%\cite{large_matrices_density_review_18}
+ 
+One setting in which \( \vec{A} \) may have a slowly varying density is when \( \vec{A} \) is a large random matrix. 
+We begin this example by considering a sample covariance matrix
+\begin{equation*}
+    \vec{A}_n = \frac{1}{m} \vec{\Sigma}^{1/2} \vec{X} \vec{X}^\cT \vec{\Sigma}^{1/2}
+\end{equation*}
+where \( \vec{X} \) is random and \( \vec{\Sigma} \) is deterministic. 
+Specifically, we fix constants \( \sigma > 1 \) and \( d \in (0,1) \), define \( m = n/d \), and take \( \vec{X} \) to be a \( n\times m \) matrix with iid standard normal entries and \( \vec{\Sigma} \) a diagonal matrix with \( 1/m \) as the first \( n/2 \) entries and \( \sigma/m \) as the last \( n/2 \) entries.
+
+In the limit, as \( n\to\infty \), the spectral density \( \,\d\Phi_n /\d x \) of \( \vec{A}_n \) is convergent to a density \( \,\d\Psi_\infty/\d x \) supported on two disjoint intervals \( [a_1,b_1] \cup [a_2,b_2] \), where \( a_1 < b_1 < a_2 < b_2 \), with equal mass on each \cite{bai_silverstein_98}.
+The spectral edges are equal to the values at which 
+\begin{equation*}
+    t\mapsto  -\frac{1}{t} + \frac{d}{2} \left( \frac{1}{t+1} + \frac{1}{t+\sigma^{-1}} \right)
+\end{equation*}
+attains at its local extrema.
+Moreover, it is known that \( \,\d\Psi_\infty/\d x \) has square root behavior at the spectral edges.
+
+
+Because we know the support of the desired density, and because we know the behavior at the spectral edges, a natural choice is to use quadrature by approximation with 
+\begin{equation*}
+    \mu 
+    = \frac{1}{2}\mu_{a_1,b_1}^U + \frac{1}{2} \mu_{a_2,b_2}^U
+\end{equation*}
+where \( \mu_{a,b}^U \) is the weight function for the Chebyshev polynomials of the second kind given by
+\begin{equation*}
+    \frac{\d\mu_{a,b}^U}{\d{x}} 
+    = \frac{4}{\pi (b-a)} \sqrt{1-\left( \frac{2}{b-a}x - \frac{b+a}{b-a}\right)} .
+\end{equation*}
+This will ensure that the Radon--Nikodym derivative \( \,\d\Psi_\infty / \,\d\mu \) is of order 1 at the spectral edges which seems to result in better numerical behavior than if we were to use a KPM approximation corresponding to a density which explodes at the spectral edges.
+
+
+To compute the Jacobi matrix for \( \mu \), we apply the Stieltjes procedure using a slight modification of the \emph{Vandermonde with Arnoldi} approach \cite{brubeck_nakatsukasa_trefethen_21}.
+In order to apply the Stieltjes procedure, we must be able to integrate polynomials against \( \mu \).
+Observe that the product
+\begin{equation*}
+    \int p \,\d\mu
+    = \frac{1}{2} \int p \,\d\mu_{a_1,b_1}^U
+    + \frac{1}{2} \int p \,\d\mu_{a_2,b_2}^U
+\end{equation*}
+can be computed \emph{exactly} by applying a sufficiently high degree quadrature rule to each of the right hand side integrals.
+If we aim to compute the \( s\times s \) Jacobi matrix associated with \( \mu \) the maximum degree polynomial we will integrate will be of degree \( 2s-1 \) when we orthogonalize \( x p_{s-1} \) against \( p_{s-1} \).
+Therefore, it suffices to use the degree \( s \) Gaussian quadrature rules for \( \mu_{a_1,b_1}^U \) and \( \mu_{a_2,b_2}^U \) for all of the first \( s \) iterations of the Stieltjes procedure.
+
+One simple approach to running the Stieltjes procedure in this manner is to place the quadrature nodes on the diagonal of a matrix \( \vec{N} \) and the corresponding weights on a vector \( \vec{w} \).
+Then the weighted CESM corresponding to \( \vec{N} \) and \( \vec{w} \) is a quadrature rule which integrate polynomials of degree up to \( 2s-1 \) against \( \mu \) exactly.
+The tridiagonal matrix obtained by the Lanczos algorithm run for \( s \) iterations will be exactly the upper \( s\times s \) block of the Jacobi matrix \( \vec{M}(\mu) \).
+Some potentially more computationally efficient approaches are outlined in \cite{fischer_golub_91}.
+
+\begin{figure}[htb]
+    \includegraphics[width=\textwidth]{imgs/ch4_RM_split_AQ.pdf}
+    \caption[{Approximations to a ``smooth'' spectrum using quadrature by approximation with various choices of \( \mu \).}]{%
+        Approximations to a ``smooth'' spectrum using quadrature by approximation with various choices of \( \mu \).
+        \hspace{.25em}\emph{Legend}:
+        \( \mu = \mu_{a_1,b_2}^U \) 
+        ({\protect\raisebox{0mm}{\protect\includegraphics[]{imgs/legend/l3nm.pdf}}}).
+        \( \mu = \frac{1}{2} \mu_{a_1,b_1}^U + \frac{1}{2} \mu_{a_2,b_2}^U \)
+        ({\protect\raisebox{0mm}{\protect\includegraphics[]{imgs/legend/l1nm.pdf}}}).
+        \hspace{.25em}\emph{Takeaway}: A priori knowledge about the spectrum allows for better choices of parameters such as \( \mu \). 
+    }
+    \label{fig:RM_split_AQ}
+\end{figure}
+
+We conduct a numerical experiment with \( n = 10^4 \) and \( d=0.3 \).
+We use \( s=60 \) and average over 10 trials, resampling \( \vec{A}_n \) in each trial.
+To generate an approximation to the density we expand the support of the limiting density by \( 0.001 \) on endpoint to avoid eigenvalues of \( \vec{A}_n \) lying outside the support of \( \mu \).
+In \cref{fig:RM_split_AQ} we show the approximations with \( \mu = \mu_{a_1,b_2}^U \) and \( \mu = \frac{1}{2} \mu_{a_1,b_1}^U + \frac{1}{2} \mu_{a_2,b_2}^U \).
+As shown in the inset image of \cref{fig:RM_split_AQ}, we observe that the approximation with \( \mu = \frac{1}{2} \mu_{a_1,b_1}^U + \frac{1}{2} \mu_{a_2,b_2}^U \) exhibits the correct square root behavior at the endpoints as well as fewer oscillations throughout the interior of the support of the density.
+
+
+\begin{remark}
+In recent work \cite{ding_trogdon_21} it was shown how Lanczos performs on such a sample covariance matrix. 
+In particular, one sample from stochastic Lanczos quadrature will converge almost surely, as \( n\to\infty \), to the desired distribution.
+In this same work another density approximation scheme was proposed based on Stieltjes transform inversion. 
+Analysis and comparison for this method is an interesting open problem.
+\end{remark}
+
+
+\subsubsection{Smoothing by convolution}
+\label{sec:smoothing}
+
+
+The Gaussian quadrature approximation is the sum of weighted Dirac delta functions.
+A simple approach to obtain a density function from a distribution function involving point masses is to approximate each point masses with some concentrated probability density function; e.g. Gaussians with a small variance \cite{lin_saad_yang_16,ghorbani_krishnan_xiao_19}.
+This is simply convolution with this distribution, and if the smoothing distribution has small enough variance, the Wasserstein distance between the original and smoothed distributions will be small. 
+Specifically, we have the following standard lemma:
+\begin{lemma}
+    \label{thm:smoothing_wass}
+    Given a smooth positive probability distribution function \( G_\sigma \), define the smoothed approximation \( \Upsilon_\sigma \) to \( \Upsilon \) by the convolution
+    \begin{equation*}
+        \Upsilon_\sigma(x)  := \int_{-\infty}^{\infty} G_\sigma(t-y) \,\d\Upsilon(y).
+    \end{equation*}
+    Then, \( \W(\Upsilon,\Upsilon_\sigma) \leq \W(\bOne[ x < 0], G_\sigma) \TV(\Upsilon) \).
+    Moreover, if \( G_\sigma \) has median zero and standard deviation \( \sigma \), then \( \W(\Upsilon,\Upsilon_\sigma)  \leq \sigma \TV(\Upsilon) \). 
+\end{lemma}
+
+\begin{figure}[htb]
+\includegraphics[width=\textwidth]{imgs/ch4_RM_split_GQ.pdf}
+    \caption[{Approximations to a ``smooth'' spectrum using smoothed Gaussian quadrature for various smoothing parameters \( \sigma \).}]{%
+    Approximations to a ``smooth'' spectrum using smoothed Gaussian quadrature for various smoothing parameters \( \sigma \).
+    \hspace{.25em}\emph{Legend}:
+    \( \sigma = 3/k \) 
+        ({\protect\raisebox{0mm}{\protect\includegraphics[]{imgs/legend/l3nm.pdf}}}).
+    \( \sigma = 8/k \) 
+        ({\protect\raisebox{0mm}{\protect\includegraphics[]{imgs/legend/l2nm.pdf}}}).
+    \( \sigma = 15/k \) 
+        ({\protect\raisebox{0mm}{\protect\includegraphics[]{imgs/legend/l1nm.pdf}}}).
+    \hspace{.25em}\emph{Takeaway}: Gaussian quadrature is not always the best choice of algorithm. 
+    Here we observe that it is difficult to produce a density approximation using the specified smoothing scheme.
+}
+\label{fig:GQ_conv_smoothing}
+\end{figure}
+
+
+It is well known that if \( G_\sigma \) is differentiable then the smoothed distribution function \( \Upsilon_\sigma \) will also be differentiable.
+Thus, we can obtained a density function \( \,\d\Upsilon_\sigma/\d{x} \) even if \( \Upsilon \) has discontinuities.
+Moreover, the bounds obtained earlier can easily be extended to smoothed spectral density approximations obtained by convolution using the triangle inequality.
+
+While the smoothing based approach has a simple theoretical guarantee in Wasserstein distance, it does not need to provide a good approximation to the density. 
+Indeed, if the variance of the smoothing kernel is too small, then the smoothed distribution will still look somewhat discrete. 
+On the other hand, if the variance of the smoothing kernel is too large, then the smooth distribution will become blurred out and lose resolution.
+As shown in \cref{fig:GQ_conv_smoothing}, this is particularly problematic if different parts of the spectrum would naturally require different amounts of smoothing.
+
+There are of course many different smoothing schemes that could be used. 
+These include adaptively choosing the variance parameter based on the position in the spectrum, using a piecewise constant approximation to the density, interpolating the distribution function with a low degree polynomial or splines, etc. 
+Further exploration of these approaches is beyond the scope of this thesis since they would likely be context dependent. 
+For instance, in random matrix theory, it may be desirable to enforce square root behavior at endpoints whereas in other applications it may be desirable to have smooth tails.
+
+
+We conclude with the remark that alternate metrics of closeness, such as the total variation distance, are likely better suited for measuring the quality of approximations to ``smooth'' densities.
+However, since the actual spectral density \( \,\d\Psi/\d{x} \) is itself the sum of Dirac deltas, some sort of regularization is required to obtain a proper density \cite{lin_saad_yang_16} which of course relates closely to what it actually means to be ``close to a smooth slowly varying density''.
+A rigorous exploration of this topic would be of interest. 
+
+
+\subsubsection{Handling isolated spikes}
+
+In some situations one may encounter spectra which are nearly ``smooth'' except at a few points at which there are large jumps in the CESM (for instance, low rank matrices may have many repeated zero eigenvalues). 
+
+To model such a situation, we consider a matrix 
+\begin{equation*}
+    \vec{A}_n := 
+    \begin{bmatrix}
+        m^{-1} \vec{X}\vec{X}^\cT & \vec{0} \\
+        \vec{0} & z\vec{I} + \sigma \vec{D}
+    \end{bmatrix}
+\end{equation*}
+where \( \vec{X} \) is a \( n'\times m \) matrix standard normal entries and \( \vec{D} \) is a \( (n-n')\times (n-n') \) diagonal matrix with standard normal entries. 
+In both cases,  \( m = n'/d \) for some fixed \( d\in(0,1) \). 
+While this particular matrix is block diagonal, the protoalgorithm is mostly oblivious to this structure and would work similarly well if the matrix were conjugated by an arbitrary unitary matrix so that the block diagonal structure is lost.
+
+When \( n\to\infty \) and \( \sigma \to 0 \), the spectral density \( \,\d\Phi_n/\d{x} \) is convergent to a density \( \,\d\Phi_\infty/\d{x} \) equal to the sum of a scaled Marchenko--Pastur distribution and a weighted Dirac delta distribution. 
+Thus, a natural approach would be to use quadrature by approximation with
+\begin{equation*}
+    \mu = (1-p) \mu_{a,b}^{U} + p \,\delta(x-z).
+\end{equation*}
+As above, we can use a modified version of the Vandermonde with Arnoldi approach to compute the orthogonal polynomials with respect to \( \mu \). 
+The resulting approximation to the ``smooth'' part of the density \( \,\d\Phi/\d{x} \) is shown in \cref{fig:RM_spike}.
+
+\begin{figure}[htb]
+\includegraphics[width=\textwidth]{imgs/ch4_RM_AQ_spiked.pdf}
+    \caption[{Approximations to a ``smooth'' spectrum with a spike using quadrature by approximation with various choices of \( \mu \).}]{%
+    Approximations to a ``smooth'' spectrum with a spike using quadrature by approximation with various choices of \( \mu \).
+    \hspace{.25em}\emph{Legend}:
+    absolutely continuous part of true limiting density
+    ({\protect\raisebox{0mm}{\protect\includegraphics[]{imgs/legend/l4nm.pdf}}}).
+    quadrature by approximation: \( \mu = (1-p) \mu_{a,b}^{U} + p \,\delta(x -z) \)
+    ({\protect\raisebox{0mm}{\protect\includegraphics[]{imgs/legend/l1nm.pdf}}}).
+    quadrature by approximation: \( \mu = \mu_{a,b}^U \) 
+    ({\protect\raisebox{0mm}{\protect\includegraphics[]{imgs/legend/l3nm.pdf}}}).
+    \hspace{.25em}\emph{Takeaway}: A priori knowledge of the location of a singularity allows for a better approximation to the absolutely continuous part of the spectrum. 
+    }
+\label{fig:RM_spike}
+\end{figure}
+
+
+
+We set \( n = 10^6 \), \( n' = n/10 \), \( d = 0.3 \), \( z=1.5 \), and \( \sigma = 10^{-10} \).
+As before, we average of \( 10 \) trials where \( \vec{A}_n \) is resampled in each trial.
+For each sample, we compute the quadrature by approximation with \( s=200 \) for \( \mu = (1-p) \mu_{a,b}^{U} + p \,\delta(x-z) \) with \( p = 0.2 \) and \( \mu = \mu_{a,b}^U \).
+The results are show in \cref{fig:RM_spike}.
+
+Clearly, accounting for the spike explicitly results in a far better approximation to the density.
+Note that this approach does not require that the mass of the spike is accurately matched. 
+For instance, in our example, we estimate the spike mass to be 0.2 while the actual mass is 0.1.
+On the other hand, if the location of the spike is misestimated, then the approximation to the density may have massive oscillations.
+In our example the spike has width roughly \( 10^{-10} \) which does not cause issues for the value of \( s \) used. 
+However, if \( s \) is increased, the width of the spike is increased, or the location of the estimate of the spike is offset significantly, then the existing oscillations become large.
+Approaches for adaptively finding the location of spikes would an interesting area of further study. 
+
+
+
+
+\subsection{Energy spectra of small spin systems}
+
+The quantum Heisenberg model can be used to study observables of magnetic systems \cite{weisse_wellein_alvermann_fehske_06,schnalle_schnack_10,schnack_richter_steinigeweg_20,schulter_gayk_schmidt_honecker_schnack_21,schlter_richter_schnack_22}.
+For a system with \( N \) spins of spin number \( S \), the Heisenberg spin Hamiltonian is an operator on a Hilbert space of dimension \( (2S+1)^N \) given by
+\begin{equation*}
+    \vec{H} = \sum_{i=0}^{N-1} \sum_{j=0}^{N-1} \left( 
+     [\vec{J}^{\textup{x}}]_{i,j} \vec{s}^{\textup{x}}_i  \vec{s}^{\textup{x}}_j 
+    +[\vec{J}^{\textup{y}}]_{i,j}  \vec{s}^{\textup{y}}_i  \vec{s}^{\textup{y}}_j
+    +[\vec{J}^{\textup{z}}]_{i,j} \vec{s}^{\textup{z}}_i  \vec{s}^{\textup{z}}_j
+    \right).
+\end{equation*}
+Here \( \vec{s}^\sigma_i \) gives the component spin operator for the \( i \)-th spin site and acts trivially on the Hilbert spaces associated with other spin sites but as the \( (2S+1)\times (2S+1) \) component spin matrix \( \vec{s}^{\sigma} \) on the \( i \)-th spin site.
+Thus, \( \vec{s}^\sigma_i \) can be represented in matrix form as
+\begin{equation*}
+    \vec{s}^\sigma_i
+    = \underbrace{\vec{I} \otimes \cdots \otimes \vec{I}}_{i\text{ terms}} 
+    \otimes ~ \vec{s}^\sigma \otimes 
+    \underbrace{\vec{I} \otimes \cdots \otimes \vec{I}}_{N-i-1\text{ terms}}.
+\end{equation*}
+%Each of the terms in the Kronecker product representation of \( \vec{s}_i^\sigma \) are dimension \( 2s+1 \) operators.% so that \( \vec{s}^\sigma_i \) is a \( (2s+1)^N \) dimension operator.
+
+\begin{figure}[htb]
+    \includegraphics[width=\textwidth]{imgs/ch4_spin_heat_capacity.pdf}
+    \caption[Heat capacity as a function of temperature for a small spin system.]{%
+    Heat capacity as a function of temperature for a small spin system.
+    \hspace{.25em}\emph{Legend}:
+    exact diagonalization 
+    ({\protect\raisebox{0mm}{\protect\includegraphics[]{imgs/legend/l4nm.pdf}}}),
+    Gaussian quadrature
+    ({\protect\raisebox{0mm}{\protect\includegraphics[]{imgs/legend/l1nm.pdf}}}),
+    quadrature by approximation 
+    ({\protect\raisebox{0mm}{\protect\includegraphics[]{imgs/legend/l2nm.pdf}}}), and
+    damped quadrature by approximation 
+    ({\protect\raisebox{0mm}{\protect\includegraphics[]{imgs/legend/l3nm.pdf}}}).
+    \hspace{.25em}\emph{Takeaway}: While damping produces a physical result, the resulting ghost bump may be more difficult to identify than the nonphysical ghost dip obtained without damping.
+    }
+    \label{fig:spin_heat_capacity}
+\end{figure}
+
+The CESM of \( \vec{H} \) gives the energy spectrum of the system and can be used to compute many important quantities.
+For instance, given an observable \( \vec{O} \) (i.e. a Hermitian matrix), the corresponding thermodynamic expectation of the observable in thermal equilibrium at inverse temperature \( \beta \)  is given by
+\begin{equation*}
+    \frac{\tr(\vec{O}\exp(-\beta \vec{H}))}{\tr(\exp(-\beta\vec{H}))}.
+\end{equation*}
+
+Quantities depending on observables which are matrix functions \( \vec{H} \) can be written entirely in terms of matrix functions of \( \vec{H} \).
+For instance, the system heat capacity is given by
+\begin{equation*}
+    \frac{C(T)}{k_B}
+    = 
+    \frac{\tr\left( (\beta\vec{H})^2 \exp(-\beta \vec{H}) \right)}{\tr \left( \exp(-\beta \vec{H}) \right)}
+    -\left[ \frac{\tr\left( \beta \vec{H} \exp(-\beta \vec{H}) \right)}{\tr \left( \exp(-\beta \vec{H}) \right)}\right]^2.
+\end{equation*}
+Thus, for fixed finite temperature, evaluating the heat capacity amounts to evaluating several matrix functions. 
+
+In some cases, symmetries of the system can be exploited to diagonalize or block diagonalize \( \vec{H} \) \cite{schnalle_schnack_10}. 
+Numerical diagonalization can be applied to blocks to obtain a full diagonalization.
+Even so, the exponential dependence of the size of \( \vec{H} \) on the number of spin sites \( N \) limits the size of systems which can be treated in this way. 
+Moreover, such techniques are not applicable to all systems. 
+Thus, approaches based on \cref{alg:protoalg} are widely used; see \cite{schnack_richter_steinigeweg_20} for examples using a Lanczos based approach and \cite{schulter_gayk_schmidt_honecker_schnack_21} for examples using a Chebyshev based approach.
+
+In this example, we consider a Heisenberg ring (\( [\vec{J}^{\textup{x}}]_{i,j} = [\vec{J}^{\textup{y}}]_{i,j} = [\vec{J}^{\textup{z}}]_{i,j} = \bOne[|i-j| = 1 \pmod{N}] \)) with \( N = 12 \) and \( S = 1/2 \).
+Similar examples, with further discussion in the context of the underlying physics, are considered in \cite{schnack_richter_steinigeweg_20,schulter_gayk_schmidt_honecker_schnack_21}.
+We take \( k = 50 \) and \( \nv = 300 \) and compute approximations to the heat capacity at many temperatures using Gaussian quadrature, quadrature by interpolation, and damped quadrature by interpolation. 
+For the latter two approximations we use \( \mu = \mu_{a,b}^T \) where \( a \) and \( b \) are chosen based on the nodes of the Gaussian quadrature. 
+Note that averages over random vectors are computed for each trace rather than for \( C(\beta) \), and that we use the same vectors for all four traces. 
+The results are shown in \cref{fig:spin_heat_capacity}.
+
+
+We note the presence of an nonphysical ``ghost dip'' in the quadrature by interpolation approximation. 
+If the approximation to the CESM is non-decreasing, the Cauchy--Schwarz inequality guarantees a positive heat capacity.
+Thus, when we use Jackson's damping, the heat capacity remains positive for all temperatures.
+However, as noted in \cite{schulter_gayk_schmidt_honecker_schnack_21}, this is not necessarily desirable as the ghost dip is easily identifiable while the ghost peak may be harder to identify.
+
+We conclude with the remark that it would be interesting to provide bounds for the accuracy of the approximations to the quantity \( \tr(\vec{O} \exp(-\beta \vec{H})) / \tr(\exp(-\beta \vec{H}))  \) for all \( \beta > 0 \).
+
+

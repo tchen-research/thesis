@@ -1,0 +1,294 @@
+\documentclass[]{report}
+
+% Colors
+\usepackage[dvipsnames]{xcolor}
+
+\definecolor{C0}{HTML}{1d1d1d}
+\definecolor{C1}{HTML}{1e3668}
+\definecolor{C2}{HTML}{199d8b}
+\definecolor{C3}{HTML}{d52f4c}
+\definecolor{C4}{HTML}{5ab2d6}
+\definecolor{C5}{HTML}{ffb268}
+
+\color{C0}
+
+% fonts
+\usepackage[no-math]{fontspec}
+
+\setmainfont[
+    BoldFont = Vollkorn Bold,
+    ItalicFont = Vollkorn Italic,
+    BoldItalicFont={Vollkorn Bold Italic},
+    RawFeature=+lnum,
+]{Vollkorn}
+
+\setsansfont[
+    BoldFont = Lato Bold,
+    FontFace={l}{n}{*-Light},
+    FontFace={l}{it}{*-Light Italic},
+]{Lato}
+
+% mathfont
+
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{unicode-math}
+
+
+\setmathfont[
+mathit = sym,
+mathup = sym,
+mathbf = sym,
+mathbf = sym,
+math-style = TeX, 
+bold-style = TeX
+]{Wholegrain Math}
+\everydisplay{\Umathoperatorsize\displaystyle=3.8ex}
+
+% section format
+\usepackage{sectsty}
+%\allsectionsfont{\normalfont\Vollkorn\bfseries}
+\allsectionsfont{\normalfont\sffamily\bfseries}
+
+\usepackage{titlesec}
+\titleformat{\chapter}[display]{\Vollkorn\bfseries}{}{0pt}{\fontsize{22}{22}\selectfont {\fontsize{18}{18}\selectfont\normalfont\Vollkorn\itshape Chapter \thechapter}\\\vspace{.0em}}
+\titleformat{\part}[display]{\Vollkorn\bfseries}{}{0pt}{\fontsize{22}{22}\selectfont {\fontsize{18}{18}\selectfont\normalfont\Vollkorn\itshape Part \thepart}\\\vspace{10cm}}
+
+
+\titleformat{\chapter}[display]{\sffamily\bfseries}{}{0pt}{\fontsize{22}{22}\selectfont {\fontseries{l}\sffamily Chapter \thechapter}\\\vspace{-.2em}}
+\titleformat{\part}[display]{\sffamily\bfseries}{}{0pt}{\fontsize{22}{22}\selectfont {\fontseries{l}\sffamily Part \thepart}\\\vspace{10cm}}
+
+\usepackage{tocloft}
+\renewcommand{\cfttoctitlefont}{\fontsize{22}{22}\selectfont\sffamily\bfseries}
+
+% Bibliography
+\usepackage[backend=biber,style=alphabetic,maxcitenames=99]{biblatex}
+\addbibresource{thesis.bib}
+
+% Page Formatting
+\usepackage[utf8]{inputenc}
+\usepackage[
+    paper=b5paper,
+    inner=22mm,         % Inner margin
+    outer=22mm,         % Outer margin
+    bindingoffset=0mm, % Binding offset
+    top=24mm,           % Top margin
+    bottom=20mm,        % Bottom margin
+    %showframe,         % show how the type block is set on the page
+]{geometry}
+
+\setlength{\parindent}{0em}
+\setlength{\parskip}{.7em}
+
+\usepackage{afterpage}
+\usepackage{pdflscape}
+
+\usepackage{enumitem}
+\renewcommand{\labelitemi}{\normalfont\bfseries\textendash}
+
+\usepackage{setspace}
+
+% header
+\usepackage{fancyhdr}
+%\renewcommand{\headrulewidth}{0pt}
+
+\fancypagestyle{body}{%
+    \fancyhf{}
+    \fancyhead[R]{{\sffamily page \textbf{\thepage}}}
+    \fancyhead[L]{{\sffamily chapter \textbf{\thechapter}}}%~section \thesection}}
+}
+
+\fancypagestyle{front}{%
+    \fancyhf{}
+    \fancyhead[R]{{\sffamily page \textbf{\thepage}}}
+}
+
+\usepackage{etoolbox}
+\patchcmd{\chapter}{\thispagestyle{plain}}{\thispagestyle{front}}{}{}
+
+\AtBeginDocument{\addtocontents{toc}{\protect\thispagestyle{front}}}
+
+
+% Math 
+
+\newtheorem{theorem}{Theorem}[chapter]
+\newtheorem{assumption}{Assumption}[chapter]
+\newtheorem{lemma}{Lemma}[chapter]
+\newtheorem{corollary}{Corollary}[chapter]
+\newtheorem{proposition}{Proposition}[chapter]
+
+\newtheorem{definition}{Definition}[chapter]
+
+\theoremstyle{definition}
+\newtheorem{example}{Example}[chapter]
+\newtheorem{remark}{Remark}[chapter]
+
+\usepackage{thmtools}
+\usepackage{thm-restate}
+
+
+% Algorithms
+\usepackage{algorithm}
+\counterwithin{algorithm}{chapter}
+\usepackage{algorithmicx}
+\usepackage[noend]{algpseudocode}
+
+%\algrenewcommand\algorithmicindent{1.0em}
+\let\Algorithm\algorithm
+\renewcommand\algorithm[1][]{\Algorithm[#1]\setstretch{1.4}}
+
+\newenvironment{labelalgorithm}[4][t]{%
+\begin{algorithm}[#1]
+%\newcommand{\thealgorithmlabel}{#2}
+\newcommand{\thealgorithmname}{#3}
+%\newcommand{\thealgorithmcap}{#4}
+\customlabel{alg:name:#2}{\textproc{#3}}
+%\customlabel{alg:cap:#2}{#4}
+\caption{#4}\label{alg:#2}
+}{\end{algorithm}}
+
+
+\makeatletter
+\newcommand{\customlabel}[2]{%
+   \protected@write \@auxout {}{\string \newlabel {#1}{{#2}{\thepage}{#2}{#1}{}} }%
+   \hypertarget{#1}{}%
+}
+\makeatother
+
+
+%\algdef{SE}[FUNCTION]{Procedure}{EndProcedure}%
+%   [2]{\algorithmicclass\ \textproc{#1}\ifthenelse{\equal{#2}{}}{}{$($#2$)$}}%
+%   {\algorithmicend\ \algorithmicclass}%
+
+\algnewcommand\algorithmicclass{\textbf{class}}
+\algdef{SE}[FUNCTION]{Class}{EndClass}%
+   [2]{\algorithmicclass\ \textproc{#1}\ifthenelse{\equal{#2}{}}{}{$($#2$)$}}%
+   {\algorithmicend\ \algorithmicclass}%
+
+% Tells algorithmicx not to print an empty line if `noend' is set 
+\makeatletter
+\ifthenelse{\equal{\ALG@noend}{t}}%
+  {\algtext*{EndClass}}
+  {}%
+\makeatother
+
+%\usepackage{showlabels}
+
+% Graphics, tables, and captions
+
+\usepackage{pgffor}
+\usepackage{graphicx}
+\usepackage{pgfplots}
+\usepackage{subcaption}
+\captionsetup{labelfont=bf}
+\captionsetup{width=.9\textwidth}
+
+\usepackage{tabularx}
+\usepackage{ltablex}
+\usepackage{booktabs}
+\usepackage{array}
+
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,
+    linkcolor=C1,
+    citecolor=C1,
+    urlcolor=C1
+}
+
+\usepackage{pdfpages}
+\usepackage[nameinlink,noabbrev]{cleveref}
+
+\crefname{ineq}{}{}
+\crefname{equation}{}{}
+\creflabelformat{ineq}{#2{\textup{(1)}}#3}
+\creflabelformat{equation}{#2\textup{(#1)}#3}
+
+\usepackage{lipsum}  
+
+
+\allowdisplaybreaks
+\newcommand{\note}[1]{{\color{Red}#1}}
+
+\newcommand{\tableemph}{\textbf}
+%\newcommand{\tableemph}{*}
+%\newcommand{\tableemph}{\color{Red}}
+
+
+\usepackage{dsfont}
+\newcommand{\bOne}{\mathbb{1}}
+
+\begin{document}
+\fontsize{11}{16}\selectfont
+
+\clearpage
+\section*{Visual design \hfill -- \hfill \textit{Lanczos-based methods for matrix functions}}
+
+
+While mathematicians frequently refer to the aesthetic value of mathematical ideas, there is a comparative lack of emphasis on the aesthetic value of written mathematics.
+I find this unfortunate, as it is my belief that visual design can greatly impact the experience of readers.
+
+A great deal of effort was spent on visual aspects of this thesis.
+This document discusses many of the aspects which went into this process. 
+
+
+\subsection*{Plots}
+
+Plots were generated with matplotlib's pgf backend. 
+This allows the text to be rendered using LuaLaTeX with the same preamble as the thesis document.
+This ensures consistency between images and body text.
+Figures were primarily designed to be viewed in color, but care was taken to ensure they are readable in greyscale and even in black/white.
+
+
+\subsection*{Color Palette}
+The color palette was inspired by the below photo of an intersection in the Nakagyo Ward of Kyoto.
+The palette was carefully chosen so that the gradations in luminosity are roughly uniform and sufficiently distinct, thereby aiding readability in greyscale.
+
+
+\vfill
+\includegraphics{palette/palette.pdf}
+%6-1 Nishinokyo Nishigekkocho, Nakagyo Ward, Kyoto, 604-8423, Japan
+
+
+
+
+
+\subsection*{Typesetting}
+
+The document is set on B5 paper which, in my opinion, is the best paper for scientific works.
+The linewidth is wide enough to provide enough room to accommodate long equations yet narrow enough to avoid the readability issues of A4 and US Letter.
+The smaller paper size also makes the document more easily accessible on digital devices with smaller screens.
+Like A series paper, B series paper has nice property that, when divided in half longwise, two pages with equal aspect ratio to the original page appear.
+It is a good exercise to determine the aspect ratio from the aforementioned property.
+
+Typesetting was done with LuaLaTeX, which allows better control over typographic aspects than the more common pdflatex.
+Throughout Lato is used for titles and other sans serif text while Vollkorn is used for the body text.
+Both typefaces are licensed under the Open Font License.
+Math is set in Wholegrain Math, a custom derivative of Vollkorn and TeX Gyre Pagella.
+
+
+\subsection*{Wholegrain Math}
+
+Vollkorn, designed by Friedrich Althausen, has grained a cult following among typographers interested in an open source serif typeface.
+The typeface is fairly well suited for long texts such as a thesis, and each weight of Vollkorn has a large character set, including Greek and Cyrillic letters and a number of mathematical symbols such as brackets and arrows.
+Thus, the possibility of use in mathematical documents has long been on my mind.
+
+While I had managed to make a number of ad-hoc solutions work for presentations and small documents, to typeset something as large as a thesis, I knew a more intentional approach was needed.
+Fonts such as Latin Modern or TeX Gyre Pagella, which are commonly used to typeset math, contain additional information use to typeset equations.
+These include information about about how mathematical constructions such as fractions and integrals should be typeset, as well as special instructions for how to construct multiple sizes of brackets, braces, integrals, fraction bars, square roots, etc. by combining special glyphs together.
+It is theoretically possible to add all of the information necessary for typesetting math equations from scratch, I realized a far easier approach is to replace glyphs in an existing math font with the desired glyphs from Vollkorn. 
+
+I selected TeX Gyre Pagella as a starting point since the font had similar characteristics (such as cap-height and x-height) to Vollkorn and since many of the mathematical symbols not present in Vollkorn fit reasonably well with the glyphs from Vollkorn.
+I then began the straightforward but tedious process of replacing glyphs from TeX Gyre Pagella with those from Vollkorn.
+For each glyph I took from Vollkorn, this required adjusting accent locations for mathematical modifiers such as hats and overbars, adjusting the character widths for use in math (rather than text).
+Larger and procedurally generated versions of objects such as brackets, braces, and integrals were manually modified to match the normal sized ones from Vollkorn.
+I also added a number of custom glyphs (such as \( \bOne \), \( \ell \), and \( \mathcal{O}\)) which did not exist in Vollkorn but whose TeX Gyre Pagella versions ({\setmathfont{TeX Gyre Pagella Math}$\bOne$}, {\setmathfont{TeX Gyre Pagella Math}$\ell$}, and {\setmathfont{TeX Gyre Pagella Math}$\mathcal{O}$}) were unsuitable.
+
+
+
+
+
+
+
+
+
+\end{document}

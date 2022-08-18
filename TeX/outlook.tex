@@ -1,0 +1,60 @@
+\chapter{Outlook}
+
+
+So, what's next for algorithms for computing expressions involving matrix functions?
+While this is far too vague a question to provide any sort of definitive answer, I will gladly discuss several directions which I hope will be pursued further in the near future.
+These topics are simply a collection of directions for future work I personally find interesting, and they should not be viewed as any sort of statement regarding the direction the field as a whole should move in.
+Indeed, many important topics, such as algorithms for high performance computing and the use of mixed precision arithmetic \cite{mixed_21} are not discussed.
+
+
+\section{Randomization}
+
+It is now widely recognized that randomization is an extremely powerful algorithmic tool in numerical linear algebra \cite{halko_martinsson_tropp_11,martinsson_tropp_20}.
+While a number of topics have ``matured'', the use of randomization in Krylov subspace methods and related algorithms remains ripe for further study.
+
+A big question is how to compute a low-rank approximation to \( \fA \), given access to products with \( \vec{A} \).
+Some progress on this question has been made, primarily with the end goal of estimating the spectral sum \( \tr(\fA) \) \cite{lin_17,gambhir_stathopoulos_orginos_17,saibaba_alexanderian_ipsen_17,li_zhu_21,chen_hallman_22}, but a general theoretical understanding of randomized Krylov subspace methods for approximating \( \fA \) is an open problem.
+A natural starting point is the analysis of block Krylov subspace methods applied to a set of random vectors \cite{musco_musco_15,martinsson_tropp_20,tropp_21}.
+However, block Lanczos methods are perhaps even more susceptible to the effects of finite precision arithmetic than the standard Lanczos methods, and not much is known theoretically about their behavior in finite precision arithmetic.
+
+
+Another interesting question is how randomization can be used to speed up computations of \( \fA\vec{v} \).
+
+For overdetermined linear systems \( \vec{A} \vec{x} = \vec{v} \), methods such as the randomized Kaczmarz algorithm \cite{strohmer_vershynin_08,needell_srebro_ward_14}, accelerated coordinate descent \cite{lee_sidford_13,allenzhu_qu_richtarik_yuan_16}, and stochastic heavy ball momentum \cite{bollapragada_chen_ward_22} can all outperform applying CG to the normal equations \( \vec{A}^\cT \vec{A} \vec{x} = \vec{A}^\cT \vec{v} \).
+In fact, for positive definite systems, accelerated coordinate descent methods can outperform CG applied directly to the system of interest.
+
+A natural way to extend these fast linear system solvers to matrix functions is by applying them to a proxy rational function whose individual terms are each positive definite linear systems.
+This technique was used in \cite{jin_sidford_19} to obtain a fast algorithm for approximating products with the matrix sign function and related quantities. 
+However, this approach treats each term in the proxy rational function as independent, despite the fact that there is significant shared structure.
+From a theoretical perspective this is acceptable as long as the number of terms in the proxy rational function is logarithmic in the accuracy tolerance, which is typically the case \cite{gopal_trefethen_19}.
+However, this is likely somewhat wasteful in practice, so it would be worthwhile to study how such ideas can be implemented more efficiently.
+
+%Finally, it would be interesting to see whether randomization can be used for indefinite linear systems.
+%A concrete goal would be to develop a randomized algorithm which can match the convergence bound for MINRES based on polynomial approximation on the union of two intervals.
+%Such an algorithm could outperform the above methods for general least squares problems on such systems.
+
+
+
+\section{Typicality}
+
+
+Recall that \emph{typicality}, discussed in \cref{sec:trace_hist}, is essentially the physics version of concentration of quadratic trace estimators.
+I find typicality fascinating for a number of reasons. 
+First, typicality provides a physical meaning to quadratic trace estimators, which have become one of the most widely studied methods in randomized numerical linear algebra.
+Second, the literature on typicality has a rich history, with the earliest works dating back nearly a century.
+This not only means the popular opinion on typicality has evolved, but it makes typicality an interesting case study in the fragmentation of knowledge between disciplines.
+While several review papers have been published recently in the physics literature \cite{goldstein_lebowitz_mastrodonato_tumulka_zanghi_10,jin_willsch_willsch_lagemann_michielsen_deraedt_21}, I believe a review from the perspective of numerical linear algebra would yield many interesting historical insights.
+Indeed, applied mathematicians have seemingly overlooked several important lines of literature on this topic.
+
+\section{Accessibility to non-experts}
+
+As mentioned in the introduction, it is my sense that practitioner knowledge of Lanczos based methods for matrix functions is limited by the lack of resources providing easy to understand background for such methods. 
+While I hope that this thesis provides a more accessible introduction to the topic, by nature, a thesis emphasizes the author's own work and only touches on the important work of others.
+A more balanced treatment of methods for matrix functions, with a treatment of methods for non-symmetric problems as well as a further emphasis on the important case of linear systems would be of general interest.
+
+Separately, I hope that easy-to-use black-box versions of some of the algorithms studied in this thesis are eventually implemented.
+A natural starting point would be implementing the integral based bounds from \cref{chap:CIF} in such a way that they could be easily integrate into existing codes.
+In order for such a tool to be truly black-box would require additional study into how to choose parameters such as the contour of integration.
+However, even if some user input is required, such a tool would help ensure more efficient resource allocation.
+
+

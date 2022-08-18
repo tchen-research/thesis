@@ -1,0 +1,369 @@
+
+In this section we prove \cref{thm:damped_cheb}.
+%\dampedcheb*
+We follow Chapter 1 of \cite{rivlin_81} closely, starting with trigonometric polynomials on \( [-\pi,\pi] \) and then mapping to algebraic polynomials on \( [-1,1] \).
+Throughout this section we maintain the notation of \cite{rivlin_81}, so the constants in this section do not necessarily have the same meaning as the rest of the paper.
+In particular, \( n \) is the degree of the trigonometric polynomials used.
+
+
+
+Given \( g:\R\to\R \), 1-Lipshitz and \( 2\pi \)-periodic, for \( \circ \in \{ \textup{i}, \textup{a} \} \), define
+\begin{equation*}
+    s_n^\circ(\theta) 
+    := \frac{a_0^\circ}{2} 
+    + \smop{\sum_{k=1}^{n}} \left( a_k^\circ \cos(k\theta) + b_k^\circ \sin(k\theta) \right)
+\end{equation*}
+where, for \( k=0,1,\ldots, n \)
+\begin{equation*}
+    a_k^\circ := \frac{1}{\pi}\int_{-\pi}^{\pi^-} g(\phi) \cos(k\phi) M_n^\circ(\phi) \,\d\phi
+    ,\qquad
+    b_k^\circ := \frac{1}{\pi}\int_{-\pi}^{\pi^-} g(\phi) \sin(k\phi) M_n^\circ(\phi) \,\d\phi.
+\end{equation*}
+Here \( M_n^{\textup{a}}(\phi) := 1 \) and 
+\begin{equation*}
+    M_n^{\textup{i}}(\phi) 
+    :=  \frac{\pi}{n} \sum_{i\in\mathbb{Z}}\delta(\phi-\phi_i)
+    ,\qquad 
+    \phi_i 
+    := \frac{2\pi(i-1/2)}{2n} - \pi
+\end{equation*}
+where \( \delta(\phi) \) is a Dirac delta distribution centered at zero.
+Thus, \( s_n^\textup{a} \) is the truncation of the Fourier series of \( g \) while \( s_n^{\textup{i}} \) is the interpolant to \( g \) at the equally spaced nodes \( \{ \phi_i \}_{i-0}^{2n} \).
+
+\begin{remark}
+    Note that \( \int_{-\pi}^{\pi^-} \) means an integral over \( [-\pi,\pi) \); i.e. the upper endpoint of integration is excluded. 
+    This is important for integrals involving \( M_n^{\textup{i}} \) which can have nonzero integral at a single point.
+\end{remark}
+
+
+Finally, define the damped interpolant/approximant
+\begin{equation*}
+    q_n^\circ(\theta) 
+    := \frac{a^\circ_0}{2} + \smop{\sum_{k=1}^{n}} \rho_k \left( a_k^\circ \cos(k \theta) + b_k^\circ \sin(k\theta) \right)
+\end{equation*}
+where the damping coefficients \( \{ \rho_{k} \}_{k=1}^{n} \) are arbitrary real numbers.
+Our aim is to bound \( \| q_n^\circ - g \|_{[-\pi,\pi]} \).
+
+\begin{lemma}
+    \label[lemma]{thm:Dn_zero}
+    For all \( k=0,1,\ldots, n \),
+    \begin{equation*}
+        \frac{1}{\pi} \int_{-\pi}^{\pi^-} \cos(k \phi) M_n^\circ(\phi) \,\d\phi
+        = \begin{cases}
+            2 & k = 0 \\%\in 4n\mathbb{Z} \\
+            0 & k \in 1,2,\ldots, n
+        \end{cases}
+    \end{equation*}
+    and
+    \begin{equation*}
+        \frac{1}{\pi} \int_{-\pi}^{\pi^-} \sin(k x) M_n^\circ(\phi) \,\d\phi
+        = 0.
+    \end{equation*}
+\end{lemma}
+
+\begin{proof} 
+    Clearly \( \frac{1}{\pi} \int_{-\pi}^{\pi^-} \cos(0 \phi) M_n^{\textup{a}} \d\phi = 2 \), and for \( k > 0 \), we have,
+    \begin{equation*}
+        \frac{1}{\pi} \int_{-\pi}^{\pi^-} \cos(k\phi) M_n^{\textup{a}}(\phi) \,\d\phi
+%        = \frac{\sin(-k\pi) - \sin(k\pi)}{k \pi} 
+        = 0.
+    \end{equation*}
+    By definition, 
+    \begin{equation*}
+        \frac{1}{\pi} \int_{-\pi}^{\pi^-} \cos(k\phi) M_n^{\textup{i}}(\phi) \,\d\phi
+        = \frac{1}{n} \smop{\sum_{j=1}^{2n}} \cos(k \phi_j)
+        = \frac{1}{n} \operatorname{Re} \smop{\sum_{j=1}^{2n}} \exp( \ii k \phi_j).
+    \end{equation*}
+    The case for \( k=0 \) is clear.
+    Assume \( k > 0 \).
+    Then, using that \( \phi_j = \frac{\pi}{n}(j-\frac{1}{2}) - \pi \) we have
+    \begin{equation*}
+        \frac{1}{n} \operatorname{Re} \smop{\sum_{j=1}^{2n}} \exp( \ii k \phi_j) 
+        = \frac{1}{n} \operatorname{Re}\left[ \exp \left(\ii k\left(\frac{\pi}{2n}- \pi\right) \right) \smop{\sum_{j=0}^{2n-1}} \exp \left( \ii \frac{k\pi}{n} j \right) \right].
+    \end{equation*}
+    The result follows by observing that 
+    \begin{equation*}
+        \smop{\sum_{j=0}^{2n-1}} \exp\left( \ii \frac{k \pi}{n} j \right) 
+        =  \frac{\exp(2\ii k \pi)-1}{\exp(\ii k \pi/n) - 1} 
+        = 0.
+    \end{equation*}
+    Finally, since \( \sin(k\phi) \) is odd and \( M_n^\circ \) is symmetric about zero, the corresponding integrals are zero.
+\end{proof}
+
+
+We now introduce a generalized version of \cite[Lemma 1.4]{rivlin_81}.
+\begin{lemma}
+    Define
+    \begin{equation*}
+        u_n(\phi) := \frac{1}{2} + \smop{\sum_{k=1}^{n}} \rho_{k} \cos(k\phi).
+    \end{equation*} 
+    Then,
+    \begin{equation*}
+        q_n^\circ(\theta) = \frac{1}{\pi} \int_{-\pi}^{\pi^-}g(\phi+\theta) u_n(\phi) M_n^\circ(\phi+\theta) \,\d\phi.
+    \end{equation*}
+\end{lemma}
+
+\begin{proof}
+    First, note that
+    \begin{align*}
+        \pi q_n^\circ(\theta)
+        &= \frac{1}{2} \bigg( \int_{-\pi}^{\pi^-} g(\phi) M_n^\circ(\phi) \,\d\phi  \bigg) 
+        + \smop{\sum_{k=1}^{n}} \rho_k 
+        \bigg( 
+        \bigg( \int_{-\pi}^{\pi^-} g(\phi) \cos(k\phi)  M_n^\circ(\phi) \,\d\phi \bigg) \cos(k\theta)
+        \\&\hspace{4em} + \bigg( \int_{-\pi}^{\pi^-} g(\phi) \sin(k\phi)  M_n^\circ(\phi) \,\d\phi \bigg) \sin(k\theta)
+        \bigg)
+        \\&= \int_{-\pi}^{\pi^-} g(\phi) \bigg( \frac{1}{2} + \smop{\sum_{k=1}^{n}} \rho_{k}( \cos(k\phi) \cos(k\theta) + \sin(k\phi) \sin(k\theta)) \bigg) M_n^\circ(\phi) \,\d\phi.
+    \end{align*}
+    % 
+    Thus, using the identity \( \cos(\alpha)\cos(\beta) + \sin(\alpha)\sin(\beta) = \cos(\alpha-\beta) \) and the definition of \( u_n \)
+    \begin{align*}
+        q_n^\circ(\theta) 
+        &= \frac{1}{\pi} \int_{-\pi}^{\pi^-} g(\phi) \left( \frac{1}{2} + \smop{\sum_{k=1}^{n}} \rho_{k} \cos(k (\phi-\theta)) \right) M_n^\circ(\phi) \,\d\phi
+        \\&= \frac{1}{\pi} \int_{-\pi}^{\pi^-} g(\phi) u_n(\phi-\theta) M_n^\circ(\phi) \,\d\phi
+    \end{align*} 
+    Now, note that  \( g \), \( u_n \), and \( M_n^\circ \) are \( 2\pi \)-periodic so by a change of variables,
+    \begin{align*}
+        \frac{1}{\pi} \int_{-\pi}^{\pi^-} g(\phi) u_n(\phi-\theta) M_n^\circ(\phi) \,\d\phi
+        &=\frac{1}{\pi} \int_{-\pi-\theta}^{\pi^--\theta} g(\phi+\theta) u_n(\phi) M_n^\circ(\phi+\theta) \,\d\phi
+        \\&=\frac{1}{\pi} \int_{-\pi}^{\pi^-} g(\phi + \theta) u_n(\phi) M_n^\circ(\phi+\theta) \,\d\phi.
+        \tag*{\qedhere}
+    \end{align*}  
+\end{proof}
+
+
+Next, we prove a result similar to \cite[Lemma 1.7]{rivlin_81}, but by assuming that \( g \) is 1-Lipshitz we obtain a slightly better constant.
+\begin{lemma}
+    \label[lemma]{thm:damped_trig}
+    Suppose \( u_n(\phi) \geq 0 \) for all \( \phi \).
+    Then, if \( g \) is 1-Lipshitz,
+    \begin{equation*}
+        \|g - q_n^\circ \|_{[-\pi,\pi]} \leq \frac{\pi}{\sqrt{2}} ( 1 - \rho_{1})^{1/2} .
+    \end{equation*} 
+\end{lemma}
+
+
+\begin{proof}
+    Fix any \( \theta \in [-\pi,\pi] \).
+    Recall that \( g \) is \( 1 \)-Lipshitz so that \( |g(\theta) - g(\phi+\theta)| \leq |\phi| \).
+    Using this and the fact that \( u_n \) is non-negative,
+    \begin{align*}
+        |g(\theta) - q_n^\circ(\theta)|
+        &= \bigg| \frac{1}{\pi} \int_{-\pi}^{\pi^-} \left( g(\theta) - g(\phi+\theta) \right)u_n(\phi) M_n^\circ(\phi+\theta) \,\d\phi \bigg|
+        \\&\leq \frac{1}{\pi} \int_{-\pi}^{\pi^-} |\phi| u_n(\phi) M_n^\circ(\phi+\theta) \,\d\phi .
+    \end{align*}
+    Next, note \( M_n^\circ \) and \( u_n \) are \( 2\pi \)-periodic.
+    Using this followed by the fact that \( \cos(k(\phi-\theta)) = \cos(k\phi) \cos(k\theta) - \sin(k\phi)\sin(k\theta) \), the definition of \( u_n \), and \cref{thm:Dn_zero}, we have
+    \begin{equation*}
+        \frac{1}{\pi} \int_{-\pi}^{\pi^-} M_n^\circ(\phi+\theta) u_n(\phi) \,\d\phi 
+        = \frac{1}{\pi} \int_{-\pi}^{\pi^-} M_n^\circ(\phi) u_n(\phi-\theta) \,\d\phi 
+        = 1.
+    \end{equation*}
+    Therefore, by the Cauchy--Schwarz inequality, 
+    \begin{align*}
+        \hspace{7em}&\hspace{-7em}\bigg(\frac{1}{\pi} \int_{-\pi}^{\pi^-} |\phi| u_n(\phi) M_n^\circ(\phi+\theta) \,\d\phi \bigg)^2 
+        \\&=\bigg(\frac{1}{\pi} \int_{-\pi}^{\pi^-} |\phi| u_n(\phi) \cdot u_n(\phi) M_n^\circ(\phi+\theta)  \d\phi \bigg)^2
+        \\&\leq \bigg( \frac{1}{\pi} \int_{-\pi}^{\pi^-} \phi^2 u_n(\phi) M_n^\circ(\phi+\theta) \,\d\phi \bigg)
+        \bigg( \frac{1}{\pi} \int_{-\pi}^{\pi^-} u_n(\phi) M_n^\circ(\phi+\theta) \,\d\phi \bigg)
+        \\&=\frac{1}{\pi} \int_{-\pi}^{\pi^-} \phi^2 u_n(\phi) M_n^\circ(\phi+\theta) \,\d\phi.
+    \end{align*}
+    Using the fact that  \( \phi^2 \leq \frac{\pi^2}{2} (1 -\cos(\phi)) \) we have 
+    \begin{equation*}
+        \frac{1}{\pi} \int_{-\pi}^{\pi^-} \phi^2 u_n(\phi) D_n(\phi+\theta) \,\d\phi
+        \leq \frac{\pi^2}{2} \frac{1}{\pi} \int_{-\pi}^{\pi^-} (1-\cos(\phi)) u_n(\phi) M_n^\circ(\phi+\theta) \,\d\phi.
+    \end{equation*}
+    Next, we use that \( \cos(\phi) \cos(k\phi) = \frac{1}{2}( \cos((k-1)\phi) + \cos((k+1)\phi)) \) and \cref{thm:Dn_zero} to obtain
+    \begin{equation*} 
+        \frac{\pi^2}{2} \frac{1}{\pi} \int_{-\pi}^{\pi^-} (1-\cos(\phi)) u_n(\phi) M_n^\circ(\phi+\theta) \,\d\phi
+        = \frac{\pi^2}{2} (1 - \rho_{1}).
+    \end{equation*}  
+    Combining this sequence of inequalities we find that
+    \begin{equation*}
+        |g(\theta) - q_n^\circ(\theta)| \leq \frac{\pi}{\sqrt{2}} ( 1 - \rho_{1})^{1/2}. \tag*{\qedhere}
+    \end{equation*} 
+\end{proof}
+
+
+\iffalse
+    Thus, from the definition of modulus of continuity,
+    \begin{align*}
+        |g(\theta) - q_n^\circ(\theta)|
+        &= \left| \frac{1}{\pi} \int_{-\pi}^{\pi^-} \left( g(\theta) - g(\phi+\theta) \right)u_n(\phi) D_n(\phi+\theta) \,\d\phi \right|
+        \\&= \left| \frac{1}{\pi} \int_{-\pi}^{\pi^-} \omega(|\phi|) u_n(\phi) M_n^\circ(\phi+\theta) \,\d\phi \right|
+    \end{align*}
+    By \note{todo}, 
+    \begin{align*}
+        \omega(|\phi|) \leq \left( 1 + n |\phi| \right) \omega \left( \frac{1}{n} \right)
+    \end{align*}
+    Thus,
+    \begin{align*}
+        |g(\theta) - q_n^\circ(\theta)|
+        \leq \omega \left( \frac{1}{n} \right) \left( 1 + \frac{n}{\pi} \int_{-\pi}^{\pi^-} |\phi| u_n(\phi) M_n^\circ(\phi+\theta) \,\d\phi \right).
+    \end{align*}
+    Next, by Cauchy--Schwarz inequality,
+    \begin{align*}
+        \frac{1}{\pi} \int_{-\pi}^{\pi^-} |\phi| u_n(\phi) M_n^\circ(\phi+\theta) \,\d\phi 
+        &=\frac{1}{\pi} \int_{-\pi}^{\pi^-} (|\phi| u_n(\phi)M_n^\circ(\phi+\theta))^{1/2} (u_n(\phi)M_n^\circ(\phi+\theta))^{1/2}  \d\phi 
+        \\&\leq \left( \frac{1}{\pi} \int_{-\pi}^{\pi^-} \phi^2 u_n(\phi) M_n^\circ(\phi+\theta) \,\d\phi \right)^{1/2} 
+        \left( \frac{1}{\pi} \int_{-\pi}^{\pi^-} u_n(\phi) M_n^\circ(\phi+\theta) \,\d\phi \right)^{1/2}
+        \\&=\left( \frac{1}{\pi} \int_{-\pi}^{\pi^-} \phi^2 u_n(\phi) M_n^\circ(\phi+\theta) \,\d\phi \right)^{1/2} 
+        \tag*{\note{why does proof have $\leq$?}}
+    \end{align*}
+    Using the fact that  \( \phi^2 \leq \frac{\pi^2}{2} (1 -\cos(\phi)) \) we have 
+    \begin{align*}
+        \frac{1}{\pi}\int_{[-\pi,\pi)} \phi^2 u_n(\phi) D_n(\phi+\theta) \,\d\phi
+        &\leq \frac{\pi^2}{2} \frac{1}{\pi}\int_{[-\pi,\pi)} (1-\cos(\phi)) u_n(\phi) M_n^\circ(\phi+\theta) \,\d\phi
+    \end{align*}
+    Next, we use that \( \cos(\phi) \cos(k\phi) = \frac{1}{2}( \cos((k-1)\phi) + \cos((s+1)\phi)) \) and \cref{thm:Dn_zero} to obtain
+    \begin{align*} 
+        \frac{\pi^2}{2} \frac{1}{\pi}\int_{[-\pi,\pi)} (1-\cos(\phi)) u_n(\phi) M_n^\circ(\phi+\theta) \,\d\phi
+        &= \frac{\pi^2}{2} (1 - g_{1,n}).
+    \end{align*}  
+    
+    Combining this sequence of inequalities we find that
+    \begin{align*}
+        |g(\theta) - q_n^\circ(\theta)| \leq \omega \left( \frac{1}{n} \right) \left[ 1 + \frac{n \pi}{\sqrt{2}} ( 1 - g_{1,n})^{1/2} \right].
+    \end{align*} 
+\fi
+
+    \begin{lemma}
+        \label[lemma]{thm:damped_weights}
+        If we use Jackson's damping coefficents from \cref{def:jackson_coeffs}, then \( u_n \) is positive and
+        \begin{equation*}    
+        \frac{\pi}{\sqrt{2}} ( 1 - \rho_{1})^{1/2}
+            \leq \frac{\pi^2}{2}(n+2)^{-1}.
+        \end{equation*}        
+    \end{lemma}
+    
+\begin{proof}
+    Let \( \{ c_\ell \}_{\ell=0}^{n} \) be any real numbers. 
+    Then 
+    \begin{equation*}
+        \bigg( \smop[r]{\sum_{\ell=0}^{n}} c_\ell \exp( \ii \ell \theta) \bigg)
+        \bigg( \smop[r]{\sum_{\ell=0}^{n}} c_\ell \exp( - \ii \ell \theta) \bigg)
+        =
+        \bigg| \smop[r]{\sum_{\ell=0}^{n}} c_\ell \exp( \ii \ell \theta) \bigg|^2
+        \geq 0.
+    \end{equation*}
+    Expanding and using that \( \exp(\ii k \theta) + \exp(-\ii k \theta) = 2\cos(k\theta) \) we find
+    \begin{equation*}
+        \bigg( \smop[r]{\sum_{\ell=0}^{n}} c_\ell \exp( \ii \ell  \theta) \bigg)
+        \bigg( \smop[r]{\sum_{\ell=0}^{n}} c_\ell \exp( - \ii \ell \theta) \bigg)
+        = \smop{\sum_{k=0}^{n}} c_k^2 
+        + 2\sum_{p=1}^{n} \sum_{k=0}^{n-p} c_k c_{k+p} \cos(p\theta). 
+    \end{equation*}
+    Because \( u_n \) must have the constant term equal to \( 1/2 \) we require \( c_0^2 + \ldots + c_n^2 = 1/2 \).
+
+    For \( \ell = 0,1,\ldots, n \), let
+    \begin{equation*}
+        c_\ell = c \sin \left( \frac{\ell+1}{n+2} \pi \right)
+    \end{equation*}
+    where
+    \begin{equation*}
+        c^2 = \bigg( \smop[r]{\sum\limits_{\ell=0}^{n}} 2\sin^2 \left( \frac{\ell+1}{n+2} \pi \right) \bigg)^{-1}
+        = \frac{1}{n+2}.
+    \end{equation*}
+    Then setting \( \rho_0 = 1 \) and 
+    \begin{equation*}
+        \rho_k = 2 \smop{\sum_{\ell=0}^{n-k}} c_\ell c_{c+k}
+    \end{equation*}
+    we obtain \( u_n \).
+
+    Next, we show that these damping coefficients are equal to those described above. 
+    Following \cite{weisse_wellein_alvermann_fehske_06} we have that
+    \begin{align*}
+        2 \smop{\sum_{\ell=0}^{n-k}} c_\ell c_{\ell+k}
+        &= 2 c^2 \smop{\sum_{\ell=0}^{n-k}} \sin\left( \frac{\ell+1}{n+2} \pi \right) \sin \left( \frac{\ell+k+1}{n+2}\pi \right)
+        \\&= 2 c^2 \smop{\sum_{\ell=1}^{n-k+1}} \sin\left( \frac{\ell}{n+2} \pi \right) \sin \left( \frac{\ell+k}{n+2}\pi \right)
+        \\&= c^2 \smop{\sum_{\ell=1}^{n-k+1}} \left( \cos\left( \frac{k}{n+2} \pi \right) - \cos \left( \frac{2\ell+k}{n+2}\pi \right) \right)
+    % \sin(\alkha)\sin(\beta) = \frac{1}{2} \left( \cos( \alkha -\beta ) - \cos(\alkha + \beta) \right)  
+        \\&= c^2 \left( (n-k) \cos\left( \frac{k}{n+2} \pi \right) 
+             - \Re \smop{\sum_{\ell=1}^{n-k+1}} \exp\left(\ii \frac{2\ell+k}{n+2}\pi \right) \right)
+        \\&= c^2 \left( (n-k+1) \cos\left( \frac{k}{n+2} \pi \right) 
+             - \sin \left( \frac{\ell}{n+2}\pi \right) \cot \left( \frac{\pi}{n+2} \right) \right).
+    \end{align*}
+    These are exactly Jackson's damping coefficients.
+
+    Using this expression, it's easy to verify that \( \rho_1 = \cos(\pi / (n+2)) \).
+    Thus
+    \begin{equation*}
+        (1-\rho_{1})^{1/2} 
+        = \left( 1 - \cos \left( \frac{\pi}{n+2} \right) \right)^{1/2}
+        = \sqrt{2} \sin \left( \frac{\pi}{2n+4} \right)
+        \leq \sqrt{2} \frac{\pi}{2n+4}
+    \end{equation*}
+    so
+    \begin{equation*}
+%        \label{eqn:1-rho1}
+        \frac{\pi}{\sqrt{2}} ( 1 - \rho_{1})^{1/2}
+        \leq \frac{\pi^2}{2n+4}
+%        \leq \frac{\pi^2}{2}n^{-1}.
+        \tag*{\qedhere}
+    \end{equation*} 
+\end{proof}
+
+Finally, we prove the desired theorem.
+\begin{proof}[Proof of \cref{thm:damped_cheb}]
+
+    Without loss of generality, we can consider the case that \( f \) is 1-Lipshitz.
+%    \note{this needs to be done more carefully, but I didn't want to dump too much time into it until I'm more confident in the rest of the results in this section. The techniques are also basically standard and always deferred to exercises in books. I will clean up later.}
+    For \( \theta \in [-\pi,\pi) \) define \( g \) by \( g(\theta) = f(\cos(\theta)) \).
+    Then \( g \) is 1-Lipshitz, \( 2\pi \)-periodic, and even. % since \( \cos \) is \( 2\pi \)-periodic and even.
+    Next define the inverse mapping of the damped trigonometric polynomial \( q_n^\circ \) for \( g \) as
+    \begin{equation*}
+        p_n^\circ(t) = q_n^\circ(\arccos(t)).
+    \end{equation*}
+    For any \( t\in [-1,1] \), setting \( \theta = \arccos(t) \in [0,\pi] \) we use \cref{thm:damped_trig,thm:damped_weights} to obtain the bound
+    \begin{equation*}
+        | p_n^\circ(t) - f(t) |
+        = | p_n^\circ(\cos(\theta)) - f(\cos(\theta)) |
+        = | q_n^\circ(\theta) - g(\theta) |
+        \leq \frac{\pi^2}{2} n^{-1}.
+    \end{equation*}
+
+    We will now show that \( p_n^\circ(t) = [f]_n^{\textup{d-}\circ} \).
+    The mapping \( \theta = \arccos(t) \) gives the Chebyshev polynomials; indeed, it is well known that
+    \begin{equation*}
+        T_k(t) = \cos(k\arccos(t)).
+    \end{equation*}
+    Since \( g \) is even we have \( b_k^\circ = 0 \) so 
+    \begin{equation*}
+        p_n^\circ(t) 
+        = q_n^\circ(\arccos(t)) 
+        = \frac{a_0^\circ}{2} + \smop{\sum_{k=1}^{n}} \rho_k a_k^\circ T_k(t).
+    \end{equation*}
+    Thus, our goal is to show that \( a_k^\circ \) are the coefficients for the Chebyshev approximation/interpolation series.
+
+    Towards this end, recall that
+    \begin{equation*}
+        a_k^\circ 
+        = \frac{1}{\pi} \int_{-\pi}^{\pi^-}g(\phi) \cos(k\phi)M_n^\circ(\phi) \,\d\phi.
+    \end{equation*}
+    Since \( g \) is even we can replace the integral on \( [-\pi,\pi) \) an integral on \( (0,\pi) \) and an integral on \( [0,\pi) \).
+    We first consider the case \( M_n^{\textup{a}}(\phi) = 1 \).
+    Noting that \( - \pi^{-1}  \arccos(t) = \mu_{-1,1}^T(t) \), we find
+    \begin{equation*}
+        a_k^\textup{a} = 2 \int_{-1}^{1} f T_k \,\d \mu_{-1,1}^T
+    \end{equation*}
+    as desired.
+    For \( j=1,2,\ldots, 2n \), we have the Chebyshev nodes
+    \begin{equation*}
+        \cos(\phi_j) 
+        = \cos \left( \frac{2\pi (j-1/2)}{2n} - \pi \right)
+        = - \cos \left( \frac{\pi (j-1/2)}{n}\right).
+    \end{equation*}
+    Thus,
+    \begin{equation*}
+        M_n^\textup{i}(t) = \frac{\pi}{n} \sum_{i\in \mathbb{Z}}  \delta(x-x_i)
+        ,\qquad x_i = - \cos \left( \frac{\pi (j-1/2)}{n}\right)
+    \end{equation*}
+    so
+    \begin{equation*}
+        a_k^\textup{i} = 2 \smop{\sum_{i=1}^{2n}} \frac{\pi}{n} f(x_i) T_k(x_i)
+        = 2 \int_{-1}^{1} f T_k \,\d \qq[g]{\mu_{-1,1}^T}{n}
+    \end{equation*}
+    as desired.    
+    The result follows by renaming \( n \) to \( s \).
+\end{proof}
+
+
